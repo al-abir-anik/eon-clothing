@@ -65,39 +65,20 @@ export const getProductBySlug = async (slug: string) => {
 //   return products?.data || [];
 // };
 
-export const getCategoriesWithSub = async () => {
-  return client.fetch(`
-    *[_type == "category"] | order(name asc){
-      _id,
-      name,
-      "slug": slug.current,
-
-      "subCategories": *[
-        _type == "subCategory" &&
-        category._ref == ^._id
-      ] | order(name asc){
-        name,
-        "slug": slug.current
-      }
-    }
-  `);
-};
-
-export const getProducts = async (category?: string, sub?: string) => {
+export const getProducts = (category?: string, subcategory?: string) => {
   return client.fetch(
-    `*[_type=="product" && isActive == true
-      && (!defined($category) || category->slug.current == $category)
-      && (!defined($sub) || subCategory->slug.current == $sub)
+    `*[
+      _type=="product"
+      ${category ? "&& category->slug.current == $category" : ""}
+      ${subcategory ? "&& subcategory->slug.current == $subcategory" : ""}
     ]{
       _id,
       name,
       price,
       images,
-      "slug": slug.current
+      "category": category->slug.current,
+      "subcategory": subcategory->slug.current
     }`,
-    {
-      category: category ?? null,
-      sub: sub ?? null,
-    },
+    { category, subcategory },
   );
 };

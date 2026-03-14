@@ -82,7 +82,12 @@ export type Product = {
     _weak?: boolean;
     [internalGroqTypeReferenceTo]?: "category";
   };
-  variant?: "solid" | "printed" | "sports" | "others";
+  subCategory?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "subCategory";
+  };
   color?: string;
   sizeStock?: Array<{
     size?: string;
@@ -127,6 +132,28 @@ export type SanityImageHotspot = {
   width?: number;
 };
 
+export type SubCategory = {
+  _id: string;
+  _type: "subCategory";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: string;
+  slug?: Slug;
+  category?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "category";
+  };
+};
+
+export type Slug = {
+  _type: "slug";
+  current?: string;
+  source?: string;
+};
+
 export type Category = {
   _id: string;
   _type: "category";
@@ -149,12 +176,6 @@ export type Category = {
     _type: "image";
   };
   isActive?: boolean;
-};
-
-export type Slug = {
-  _type: "slug";
-  current?: string;
-  source?: string;
 };
 
 export type SanityImagePaletteSwatch = {
@@ -258,8 +279,9 @@ export type AllSanitySchemaTypes =
   | Product
   | SanityImageCrop
   | SanityImageHotspot
-  | Category
+  | SubCategory
   | Slug
+  | Category
   | SanityImagePaletteSwatch
   | SanityImagePalette
   | SanityImageDimensions
@@ -270,6 +292,73 @@ export type AllSanitySchemaTypes =
   | Geopoint;
 
 export declare const internalGroqTypeReferenceTo: unique symbol;
+
+// Source: sanity/helpers/queries.ts
+// Variable: ALL_PRODUCT_QUERY
+// Query: *[_type == "product"]
+export type ALL_PRODUCT_QUERY_RESULT = Array<{
+  _id: string;
+  _type: "product";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: string;
+  slug?: Slug;
+  sku?: string;
+  price?: number;
+  regularPrice?: number;
+  images?: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
+  category?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "category";
+  };
+  subCategory?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "subCategory";
+  };
+  color?: string;
+  sizeStock?: Array<{
+    size?: string;
+    stock?: "in_stock" | "out_of_stock";
+    _key: string;
+  }>;
+  details?: Array<string>;
+  description?: string;
+  sizeChart?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  status?: "" | "hot" | "new" | "sale";
+  tags?: Array<string>;
+  isFeatured?: boolean;
+  isActive?: boolean;
+  metaTitle?: string;
+  metaDescription?: string;
+}>;
 
 // Source: sanity/helpers/queries.ts
 // Variable: PRODUCT_BY_SLUG_QUERY
@@ -304,7 +393,12 @@ export type PRODUCT_BY_SLUG_QUERY_RESULT = {
     _weak?: boolean;
     [internalGroqTypeReferenceTo]?: "category";
   };
-  variant?: "others" | "printed" | "solid" | "sports";
+  subCategory?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "subCategory";
+  };
   color?: string;
   sizeStock?: Array<{
     size?: string;
@@ -333,38 +427,11 @@ export type PRODUCT_BY_SLUG_QUERY_RESULT = {
   metaDescription?: string;
 } | null;
 
-// Source: sanity/helpers/queries.ts
-// Variable: CATEGORIES_QUERY
-// Query: *[_type=="category" && isActive == true] | order(name asc)
-export type CATEGORIES_QUERY_RESULT = Array<{
-  _id: string;
-  _type: "category";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  name?: string;
-  slug?: Slug;
-  description?: string;
-  image?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-  isActive: true;
-}>;
-
 // Query TypeMap
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
+    '*[_type == "product"]': ALL_PRODUCT_QUERY_RESULT;
     "*[_type == 'product' && slug.current == $slug][0]": PRODUCT_BY_SLUG_QUERY_RESULT;
-    '*[_type=="category" && isActive == true] | order(name asc)': CATEGORIES_QUERY_RESULT;
   }
 }

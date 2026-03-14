@@ -7,7 +7,7 @@ import { client } from "@/sanity/lib/client";
 import { AnimatePresence, motion } from "motion/react";
 import { Loader2 } from "lucide-react";
 import { Product } from "@/sanity.types";
-import NoProductFound from "../ui/NoProductFound";
+import NoProductFound from "../local-ui/NoProductFound";
 import ProductCard from "./ProductCard";
 
 const ProductGrid = () => {

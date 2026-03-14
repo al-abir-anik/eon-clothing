@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { Product } from "@/sanity.types";
-import ImageView from "./ui/ImageView";
-import PriceView from "./ui/PriceView";
+import ImageView from "./local-ui/ImageView";
+import PriceView from "./local-ui/PriceView";
 import { Heart, X } from "lucide-react";
 import Link from "next/link";
 import AddToCart from "./cart/AddToCart";

@@ -3,7 +3,7 @@
 import { Search, SearchIcon, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import PriceView from "./ui/PriceView";
+import PriceView from "./local-ui/PriceView";
 import Link from "next/link";
 import Image from "next/image";
 import { urlFor } from "@/sanity/lib/image";

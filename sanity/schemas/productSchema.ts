@@ -84,9 +84,6 @@ export const productType = defineType({
       to: [{ type: "subCategory" }],
     }),
 
-
-
-
     defineField({
       name: "color",
       title: "Color",

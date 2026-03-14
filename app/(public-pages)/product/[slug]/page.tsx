@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/sanity/helpers/queries";
 import Container from "@/components/layout/Container";
-import ImageView from "@/components/ui/ImageView";
-import PriceView from "@/components/ui/PriceView";
-import SizeStock from "@/components/ui/SizeStock";
+import ImageView from "@/components/local-ui/ImageView";
+import PriceView from "@/components/local-ui/PriceView";
+import SizeStock from "@/components/local-ui/SizeStock";
 import AddToCartButton from "@/components/cart/AddToCart";
 import { Heart } from "lucide-react";
 

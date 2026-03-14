@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import Loader from "@/components/ui/Loader";
+import Loader from "@/components/local-ui/Loader";
 import useCartStore from "@/store/cartStore";
 
 const SuccessPage = () => {

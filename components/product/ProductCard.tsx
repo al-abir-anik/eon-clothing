@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Product } from "@/sanity.types";
 import { urlFor } from "@/sanity/lib/image";
 import { FlameIcon } from "lucide-react";
-import PriceView from "../ui/PriceView";
+import PriceView from "../local-ui/PriceView";
 import WishlistBtn from "../buttons/WishlistBtn";
 import QuickView from "../QuickView";
 

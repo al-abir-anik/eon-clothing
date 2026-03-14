@@ -2,7 +2,7 @@
 
 import { Product } from "@/sanity.types";
 import { useState } from "react";
-import SizeStock from "../ui/SizeStock";
+import SizeStock from "../local-ui/SizeStock";
 import AddToCartButton from "../cart/AddToCart";
 
 export type SizeItem = {
