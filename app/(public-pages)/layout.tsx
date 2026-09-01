@@ -1,31 +1,34 @@
 import Footer from "@/components/layout/Footer";
-import Header from "@/components/layout/Header";
-import { ClerkProvider } from "@clerk/nextjs";
+import Header from "@/components/layout/header/Header";
+import { getShopCategories } from "@/sanity/helpers/queries";
 import { Toaster } from "react-hot-toast";
 
-export default function PublicLayout({
+
+
+export default async function PublicLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const categories = await getShopCategories();
+
   return (
-    <>
-      <ClerkProvider>
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <main className="mt-5 flex-1">{children}</main>
-          <Footer />
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              style: {
-                background: "#000",
-                color: "#fff",
-              },
-            }}
-          />
-        </div>
-      </ClerkProvider>
-    </>
+    <div className="flex min-h-screen flex-col">
+      <Header categories={categories} />
+
+      <main className="flex-1">{children}</main>
+
+      <Footer />
+
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: "#000",
+            color: "#fff",
+          },
+        }}
+      />
+    </div>
   );
 }

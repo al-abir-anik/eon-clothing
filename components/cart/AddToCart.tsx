@@ -1,72 +1,129 @@
 "use client";
 
-import { useState } from "react";
-import { Product } from "@/sanity.types";
-import { SizeItem } from "../product/ProductAction";
+import { PRODUCT_BY_SLUG_QUERY_RESULT } from "@/sanity.types";
+import { urlFor } from "@/sanity/lib/image";
 import useCartStore from "@/store/cartStore";
+import useCartDrawerStore from "@/store/cartDrawerStore";
+import { ShoppingCart } from "lucide-react";
 import toast from "react-hot-toast";
 
-const AddToCart = ({ product }: { product: Product }) => {
-  const [selectedSize, setSelectedSize] = useState<SizeItem | null>(null);
-  const [showSizeError, setShowSizeError] = useState(false);
-  const { addItem } = useCartStore();
+type Product = NonNullable<PRODUCT_BY_SLUG_QUERY_RESULT>;
 
-  const handleAddtocart = () => {
-    if (!selectedSize) {
-      setShowSizeError(true);
+interface Props {
+  product: Product;
+  colorId: string | null;
+  colorName: string | null;
+  colorHex: string | null;
+  sizeId: string | null;
+  sizeName: string | null;
+  maxStock: number;
+  quantity: number;
+}
+
+const AddToCart = ({
+  product,
+  colorId,
+  colorName,
+  colorHex,
+  sizeId,
+  sizeName,
+  maxStock,
+  quantity,
+}: Props) => {
+  const addItem = useCartStore((state) => state.addItem);
+  const openCart = useCartDrawerStore((state) => state.openCart);
+
+  const price = product.useCustomPricing
+    ? product.customPrice
+    : product.productType?.price;
+
+  const handleAddToCart = () => {
+    // Size validation
+    if (!sizeId || !sizeName) {
+      toast.error("Please select a size.");
       return;
     }
-    if (selectedSize.stock !== "in_stock") {
-      toast.error("Selected size is stock out.");
+
+    // Stock validation
+    if (maxStock <= 0) {
+      toast.error("This size is out of stock.");
       return;
     }
-    addItem(product, selectedSize.size!);
-    toast.success(`${product?.name?.substring(0, 12)}...added successfully.`);
+
+    // Price validation
+    if (price === undefined || price === null) {
+      toast.error("Product price is unavailable.");
+      return;
+    }
+
+    // Quantity validation
+    if (quantity < 1) {
+      toast.error("Please select a valid quantity.");
+      return;
+    }
+
+    if (quantity > maxStock) {
+      toast.error(`Only ${maxStock} available.`);
+      return;
+    }
+
+    const success = addItem({
+      productId: product._id,
+      name: product.name ?? "Product",
+      slug: product.slug,
+      sku: product.sku,
+
+      image: product.images?.[0]
+        ? urlFor(product.images[0])
+          .width(300)
+          .height(375)
+          .url()
+        : undefined,
+
+      colorId,
+      colorName,
+      colorHex,
+
+      sizeId,
+      sizeName,
+
+      unitPrice: price,
+      maxStock,
+      quantity,
+    });
+
+    if (!success) {
+      toast.error(
+        quantity > 1
+          ? `Cannot add ${quantity}. Only ${maxStock} available.`
+          : "No more stock available.",
+      );
+
+      return;
+    }
+
+    // Success
+    toast.success(
+      quantity > 1
+        ? `${quantity} items added to cart!`
+        : "Added to cart!",
+    );
+
+    // Open drawer
+    openCart();
   };
 
   return (
-    <div className="w-full flex flex-col gap-5">
-      {/* size */}
-      <h3 className="font-semibold">Choose Size :</h3>
-      <div className="flex gap-3">
-        {product?.sizeStock?.map((item) => (
-          <label key={item?._key} className="cursor-pointer">
-            <input
-              type="radio"
-              name="size"
-              value={item?.size}
-              onChange={() => {
-                setSelectedSize(item);
-                setShowSizeError(false);
-              }}
-              className="hidden"
-            />
-            <span
-              className={`px-4 py-1.5 md:px-5 md:py-2.5 uppercase font-medium rounded-xs text-darkColor border border-darkColor/30 hover:border-darkColor/90 transition-colors ${selectedSize?._key === item._key ? "bg-darkColor text-white" : "bg-transparent"}`}
-            >
-              {item?.size}
-            </span>
-          </label>
-        ))}
-      </div>
-      {showSizeError && <p className="text-red-600">Please select a size.</p>}
-      {/* stock */}
-      {selectedSize && (
-        <p
-          className={`w-40 py-2.5 mt-2 text-sm text-center font-semibold rounded ${selectedSize?.stock === "in_stock" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}
-        >
-          {selectedSize?.stock === "in_stock" ? "In Stock" : "Out of Stock"}
-        </p>
-      )}
+    <button
+      type="button"
+      onClick={handleAddToCart}
+      disabled={maxStock <= 0}
+      className="flex h-11 items-center justify-center gap-2 rounded-sm bg-darkColor px-6 text-white transition-colors hover:bg-darkColor/90 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      <ShoppingCart className="h-5 w-5" />
 
-      {/* cart button */}
-      <button
-        onClick={handleAddtocart}
-        className="w-full h-11 mt-4 font-semibold text-white bg-darkColor/85 hover:bg-darkColor tracking-wide rounded-xs transition-colors"
-      >
-        Add to Cart
-      </button>
-    </div>
+      {maxStock > 0 ? "Add to Cart" : "Out of Stock"}
+    </button>
   );
 };
 

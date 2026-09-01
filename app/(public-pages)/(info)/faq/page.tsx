@@ -1,10 +1,11 @@
+import Container from '@/components/layout/Container';
 import React from 'react';
 
 const FAQsPage = () => {
     return (
-        <div>
-            
-        </div>
+        <Container>
+            Faq&apos Page
+        </Container>
     );
 };
 

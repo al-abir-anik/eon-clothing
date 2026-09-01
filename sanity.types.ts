@@ -12,7 +12,30 @@
  * ---------------------------------------------------------------------------------
  */
 
+export declare const internalGroqTypeReferenceTo: unique symbol;
+
 // Source: schema.json
+export type ProductReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "product";
+};
+
+export type ColorReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "color";
+};
+
+export type SizeReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "size";
+};
+
 export type Order = {
   _id: string;
   _type: "order";
@@ -22,34 +45,84 @@ export type Order = {
   orderId?: string;
   customerName?: string;
   phoneNumber?: string;
-  address?: string;
-  deliveryArea?: string;
+  email?: string;
+  shipping?: {
+    area?: "inside_dhaka" | "outside";
+    address?: string;
+    courier?: "pathao" | "other";
+    trackingId?: string;
+  };
   orderNote?: string;
   items?: Array<{
-    productId?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "product";
-    };
+    productId?: ProductReference;
     name?: string;
-    size?: string;
+    sku?: string;
+    colorId?: ColorReference;
+    colorName?: string;
+    sizeId?: SizeReference;
+    sizeName?: string;
     quantity?: number;
-    price?: number;
+    unitPrice?: number;
+    unitCost?: number;
+    subtotal?: number;
     _type: "orderItem";
     _key: string;
   }>;
   subtotal?: number;
+  discount?: number;
   shippingCharge?: number;
+  actualShippingCost?: number;
   total?: number;
+  totalCost?: number;
+  paymentMethod?: "cod" | "bkash" | "nagad" | "bank_transfer" | "other";
+  paymentStatus?: "unpaid" | "partially_paid" | "paid" | "failed" | "refunded";
+  amountPaid?: number;
   status?:
     | "pending"
-    | "processing"
+    | "confirmed"
     | "shipped"
     | "delivered"
-    | "cancelled"
-    | "returned";
+    | "returned"
+    | "cancelled";
+  statusHistory?: Array<{
+    status?:
+      | "pending"
+      | "confirmed"
+      | "shipped"
+      | "delivered"
+      | "returned"
+      | "cancelled";
+    changedAt?: string;
+    _type: "statusUpdate";
+    _key: string;
+  }>;
   createdAt?: string;
+  updatedAt?: string;
+  confirmedAt?: string;
+  shippedAt?: string;
+  deliveredAt?: string;
+  cancelledAt?: string;
+};
+
+export type SanityImageAssetReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+};
+
+export type ProductTypeReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "productType";
+};
+
+export type BaseGarmentReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "baseGarment";
 };
 
 export type Product = {
@@ -61,57 +134,38 @@ export type Product = {
   name?: string;
   slug?: Slug;
   sku?: string;
-  price?: number;
-  regularPrice?: number;
   images?: Array<{
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
+    asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
     _type: "image";
     _key: string;
   }>;
-  category?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "category";
-  };
-  subCategory?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "subCategory";
-  };
-  color?: string;
-  sizeStock?: Array<{
-    size?: string;
-    stock?: "in_stock" | "out_of_stock";
-    _key: string;
-  }>;
-  details?: Array<string>;
   description?: string;
-  sizeChart?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-  status?: "" | "new" | "hot" | "sale";
-  tags?: Array<string>;
+  details?: Array<string>;
+  productType?: ProductTypeReference;
+  baseGarment?: BaseGarmentReference;
+  color?: ColorReference;
+  availableColors?: Array<
+    {
+      _key: string;
+    } & ColorReference
+  >;
+  useCustomPricing?: boolean;
+  customPrice?: number;
+  customRegularPrice?: number;
+  status?: "none" | "new" | "hot" | "sale" | "sold_out";
   isFeatured?: boolean;
   isActive?: boolean;
+  tags?: Array<string>;
+  sizeChart?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
   metaTitle?: string;
   metaDescription?: string;
 };
@@ -132,26 +186,87 @@ export type SanityImageHotspot = {
   width?: number;
 };
 
-export type SubCategory = {
+export type BaseGarment = {
   _id: string;
-  _type: "subCategory";
+  _type: "baseGarment";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: string;
+  costPrice?: number;
+  variants?: Array<{
+    color?: ColorReference;
+    sizes?: Array<{
+      size?: SizeReference;
+      stock?: number;
+      _type: "sizeStock";
+      _key: string;
+    }>;
+    _type: "garmentVariant";
+    _key: string;
+  }>;
+  isActive?: boolean;
+  notes?: string;
+};
+
+export type Size = {
+  _id: string;
+  _type: "size";
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
   name?: string;
   slug?: Slug;
-  category?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "category";
-  };
+  sortOrder?: number;
+  isActive?: boolean;
 };
 
 export type Slug = {
   _type: "slug";
   current?: string;
   source?: string;
+};
+
+export type Color = {
+  _id: string;
+  _type: "color";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: string;
+  slug?: Slug;
+  hex?: string;
+};
+
+export type CategoryReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "category";
+};
+
+export type ProductType = {
+  _id: string;
+  _type: "productType";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: string;
+  slug?: Slug;
+  category?: CategoryReference;
+  fulfillmentType?: "ready_stock" | "made_to_order";
+  description?: string;
+  image?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  price?: number;
+  regularPrice?: number;
+  isActive?: boolean;
+  sortOrder?: number;
 };
 
 export type Category = {
@@ -164,17 +279,13 @@ export type Category = {
   slug?: Slug;
   description?: string;
   image?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
+    asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
     _type: "image";
   };
+  sortOrder?: number;
   isActive?: boolean;
 };
 
@@ -275,12 +386,22 @@ export type Geopoint = {
 };
 
 export type AllSanitySchemaTypes =
+  | ProductReference
+  | ColorReference
+  | SizeReference
   | Order
+  | SanityImageAssetReference
+  | ProductTypeReference
+  | BaseGarmentReference
   | Product
   | SanityImageCrop
   | SanityImageHotspot
-  | SubCategory
+  | BaseGarment
+  | Size
   | Slug
+  | Color
+  | CategoryReference
+  | ProductType
   | Category
   | SanityImagePaletteSwatch
   | SanityImagePalette
@@ -290,8 +411,6 @@ export type AllSanitySchemaTypes =
   | SanityAssetSourceData
   | SanityImageAsset
   | Geopoint;
-
-export declare const internalGroqTypeReferenceTo: unique symbol;
 
 // Source: sanity/helpers/queries.ts
 // Variable: ALL_PRODUCT_QUERY
@@ -305,133 +424,158 @@ export type ALL_PRODUCT_QUERY_RESULT = Array<{
   name?: string;
   slug?: Slug;
   sku?: string;
-  price?: number;
-  regularPrice?: number;
   images?: Array<{
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
+    asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
     _type: "image";
     _key: string;
   }>;
-  category?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "category";
-  };
-  subCategory?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "subCategory";
-  };
-  color?: string;
-  sizeStock?: Array<{
-    size?: string;
-    stock?: "in_stock" | "out_of_stock";
-    _key: string;
-  }>;
-  details?: Array<string>;
   description?: string;
-  sizeChart?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-  status?: "" | "hot" | "new" | "sale";
-  tags?: Array<string>;
+  details?: Array<string>;
+  productType?: ProductTypeReference;
+  baseGarment?: BaseGarmentReference;
+  color?: ColorReference;
+  availableColors?: Array<
+    {
+      _key: string;
+    } & ColorReference
+  >;
+  useCustomPricing?: boolean;
+  customPrice?: number;
+  customRegularPrice?: number;
+  status?: "hot" | "new" | "none" | "sale" | "sold_out";
   isFeatured?: boolean;
   isActive?: boolean;
+  tags?: Array<string>;
+  sizeChart?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
   metaTitle?: string;
   metaDescription?: string;
 }>;
 
 // Source: sanity/helpers/queries.ts
 // Variable: PRODUCT_BY_SLUG_QUERY
-// Query: *[_type == 'product' && slug.current == $slug][0]
+// Query: *[      _type == "product" &&      slug.current == $slug &&      isActive == true    ][0]    {      _id,      _type,      name,      "slug": slug.current,      sku,      images,      description,      details,      // Product Type      "productType": productType->{        _id,        name,        "slug": slug.current,        fulfillmentType,        price,        regularPrice,        "category": category->{          _id,          name,          "slug": slug.current        }      },      // Actual inventory      "variants": baseGarment->variants[]{        _key,        "color": color->{          _id,          name,          "slug": slug.current,          hex        },        "sizes": sizes[]{          _key,          "size": size->{            _id,            name,            "slug": slug.current,            sortOrder          },          stock        }      },      // Ready-stock product color      "color": color->{        _id,        name,        "slug": slug.current,        hex      },      // Made-to-order colors      "availableColors": availableColors[]->{        _id,        name,        "slug": slug.current,        "hex": hex      },      // Pricing      useCustomPricing,      customPrice,      customRegularPrice,      // Product status      status,      isFeatured,      isActive,      tags,      // Size chart      sizeChart,      // SEO      metaTitle,      metaDescription    }
 export type PRODUCT_BY_SLUG_QUERY_RESULT = {
   _id: string;
   _type: "product";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  name?: string;
-  slug?: Slug;
-  sku?: string;
-  price?: number;
-  regularPrice?: number;
-  images?: Array<{
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
+  name: string | null;
+  slug: string | null;
+  sku: string | null;
+  images: Array<{
+    asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
     _type: "image";
     _key: string;
-  }>;
-  category?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "category";
-  };
-  subCategory?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "subCategory";
-  };
-  color?: string;
-  sizeStock?: Array<{
-    size?: string;
-    stock?: "in_stock" | "out_of_stock";
+  }> | null;
+  description: string | null;
+  details: Array<string> | null;
+  productType: {
+    _id: string;
+    name: string | null;
+    slug: string | null;
+    fulfillmentType: "made_to_order" | "ready_stock" | null;
+    price: number | null;
+    regularPrice: number | null;
+    category: {
+      _id: string;
+      name: string | null;
+      slug: string | null;
+    } | null;
+  } | null;
+  variants: Array<{
     _key: string;
-  }>;
-  details?: Array<string>;
-  description?: string;
-  sizeChart?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
+    color: {
+      _id: string;
+      name: string | null;
+      slug: string | null;
+      hex: string | null;
+    } | null;
+    sizes: Array<{
+      _key: string;
+      size: {
+        _id: string;
+        name: string | null;
+        slug: string | null;
+        sortOrder: number | null;
+      } | null;
+      stock: number | null;
+    }> | null;
+  }> | null;
+  color: {
+    _id: string;
+    name: string | null;
+    slug: string | null;
+    hex: string | null;
+  } | null;
+  availableColors: Array<{
+    _id: string;
+    name: string | null;
+    slug: string | null;
+    hex: string | null;
+  }> | null;
+  useCustomPricing: boolean | null;
+  customPrice: number | null;
+  customRegularPrice: number | null;
+  status: "hot" | "new" | "none" | "sale" | "sold_out" | null;
+  isFeatured: boolean | null;
+  isActive: boolean | null;
+  tags: Array<string> | null;
+  sizeChart: {
+    asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
     _type: "image";
-  };
-  status?: "" | "hot" | "new" | "sale";
-  tags?: Array<string>;
-  isFeatured?: boolean;
-  isActive?: boolean;
-  metaTitle?: string;
-  metaDescription?: string;
+  } | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
 } | null;
+
+// Source: sanity/helpers/queries.ts
+// Variable: SHOP_CATEGORIES_QUERY
+// Query: *[      _type == "category" &&      isActive == true    ]    | order(sortOrder asc, name asc)    {      _id,      name,      "slug": slug.current    }
+export type SHOP_CATEGORIES_QUERY_RESULT = Array<{
+  _id: string;
+  name: string | null;
+  slug: string | null;
+}>;
+
+// Source: sanity/helpers/queries.ts
+// Variable: SHOP_FILTER_OPTIONS_QUERY
+// Query: {      "categories": *[        _type == "category" &&        isActive == true      ]      | order(sortOrder asc, name asc)      {        _id,        name,        "slug": slug.current      },      "productTypes": *[        _type == "productType" &&        isActive == true      ]      | order(sortOrder asc, name asc)      {        _id,        name,        "slug": slug.current      },      "products": *[        _type == "product" &&        isActive == true &&        defined(productType) &&        defined(productType->)      ]      {        availableVariants[]{          color,          colorHex,          sizes[]        }      }    }
+export type SHOP_FILTER_OPTIONS_QUERY_RESULT = {
+  categories: Array<{
+    _id: string;
+    name: string | null;
+    slug: string | null;
+  }>;
+  productTypes: Array<{
+    _id: string;
+    name: string | null;
+    slug: string | null;
+  }>;
+  products: Array<{
+    availableVariants: null;
+  }>;
+};
 
 // Query TypeMap
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
     '*[_type == "product"]': ALL_PRODUCT_QUERY_RESULT;
-    "*[_type == 'product' && slug.current == $slug][0]": PRODUCT_BY_SLUG_QUERY_RESULT;
+    '\n    *[\n      _type == "product" &&\n      slug.current == $slug &&\n      isActive == true\n    ][0]\n    {\n      _id,\n      _type,\n      name,\n      "slug": slug.current,\n      sku,\n      images,\n      description,\n      details,\n\n      // Product Type\n      "productType": productType->{\n        _id,\n        name,\n        "slug": slug.current,\n        fulfillmentType,\n        price,\n        regularPrice,\n\n        "category": category->{\n          _id,\n          name,\n          "slug": slug.current\n        }\n      },\n\n      // Actual inventory\n      "variants": baseGarment->variants[]{\n        _key,\n\n        "color": color->{\n          _id,\n          name,\n          "slug": slug.current,\n          hex\n        },\n\n        "sizes": sizes[]{\n          _key,\n\n          "size": size->{\n            _id,\n            name,\n            "slug": slug.current,\n            sortOrder\n          },\n\n          stock\n        }\n      },\n\n      // Ready-stock product color\n      "color": color->{\n        _id,\n        name,\n        "slug": slug.current,\n        hex\n      },\n\n      // Made-to-order colors\n      "availableColors": availableColors[]->{\n        _id,\n        name,\n        "slug": slug.current,\n        "hex": hex\n      },\n\n      // Pricing\n      useCustomPricing,\n      customPrice,\n      customRegularPrice,\n\n      // Product status\n      status,\n      isFeatured,\n      isActive,\n      tags,\n\n      // Size chart\n      sizeChart,\n\n      // SEO\n      metaTitle,\n      metaDescription\n    }\n  ': PRODUCT_BY_SLUG_QUERY_RESULT;
+    '\n    *[\n      _type == "category" &&\n      isActive == true\n    ]\n    | order(sortOrder asc, name asc)\n    {\n      _id,\n      name,\n      "slug": slug.current\n    }\n  ': SHOP_CATEGORIES_QUERY_RESULT;
+    '\n    {\n      "categories": *[\n        _type == "category" &&\n        isActive == true\n      ]\n      | order(sortOrder asc, name asc)\n      {\n        _id,\n        name,\n        "slug": slug.current\n      },\n\n      "productTypes": *[\n        _type == "productType" &&\n        isActive == true\n      ]\n      | order(sortOrder asc, name asc)\n      {\n        _id,\n        name,\n        "slug": slug.current\n      },\n\n      "products": *[\n        _type == "product" &&\n        isActive == true &&\n        defined(productType) &&\n        defined(productType->)\n      ]\n      {\n        availableVariants[]{\n          color,\n          colorHex,\n          sizes[]\n        }\n      }\n    }\n  ': SHOP_FILTER_OPTIONS_QUERY_RESULT;
   }
 }

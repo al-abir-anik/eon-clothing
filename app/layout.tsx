@@ -1,9 +1,8 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
-import { Urbanist, Geist } from "next/font/google";
-import "../style/index.css";
+import { Urbanist } from "next/font/google";
 import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+import "../style/index.css";
 
 const urbanist = Urbanist({
   variable: "--font-urbanist",
@@ -13,10 +12,10 @@ const urbanist = Urbanist({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s - GrayHanger",
-    default: "GrayHanger",
+    template: "%s - EON Clothing",
+    default: "EON Clothing",
   },
-  description: "GrayHanger online store, Your one stop shop for all your needs",
+  description: "EON Clothing online store, Your one stop shop for all your needs",
 };
 
 export default function RootLayout({
@@ -25,8 +24,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
-      <body className={`${urbanist.className} antialiased`}>{children}</body>
+    <html lang="en" className={cn("font-urbanist", urbanist.className)}>
+      <body className={` antialiased`}>
+        <ClerkProvider>{children}</ClerkProvider>
+      </body>
     </html>
   );
 }

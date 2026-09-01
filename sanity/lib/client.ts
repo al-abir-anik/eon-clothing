@@ -8,12 +8,3 @@ export const client = createClient({
   apiVersion,
   useCdn: true,
 });
-
-// client used for creating orders, updating order status, deleting orders
-export const writeClient = createClient({
-  projectId,
-  dataset,
-  apiVersion,
-  token: process.env.SANITY_API_TOKEN,
-  useCdn: false,
-});

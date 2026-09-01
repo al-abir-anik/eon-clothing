@@ -1,10 +1,31 @@
-import ShopProducts from "@/components/product/ShopProducts";
-import { getProducts } from "@/sanity/helpers/queries";
+import ShopPage from "@/components/shop-page/ShopPage";
 
-const ShopPage = async () => {
-  const products = await getProducts();
+import { parseShopFilters } from "@/lib/shop-filter/filters";
+import { getShopFilterOptions, getShopProducts } from "@/sanity/helpers/queries";
 
-  return <ShopProducts products={products} />;
-};
+interface ShopRouteProps {
+  searchParams: Promise<
+    Record<string, string | string[] | undefined>
+  >;
+}
 
-export default ShopPage;
+export default async function ShopRoute({
+  searchParams,
+}: ShopRouteProps) {
+  const params = await searchParams;
+
+  const filters = parseShopFilters(params);
+
+  const [products, filterOptions] = await Promise.all([
+    getShopProducts(filters),
+    getShopFilterOptions(),
+  ]);
+
+  return (
+    <ShopPage
+      products={products}
+      filterOptions={filterOptions}
+      filters={filters}
+    />
+  );
+}

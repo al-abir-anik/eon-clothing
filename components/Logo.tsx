@@ -1,20 +1,27 @@
-import { cn } from "@/lib/utils";
+import Image from "next/image";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
-const Logo = ({ className }: { className?: string }) => {
+interface LogoProps {
+  className?: string;
+  priority?: boolean;
+}
+
+const Logo = ({ className, priority = false }: LogoProps) => {
   return (
-    <Link href={"/"}>
-      <h2
-        className={cn(
-          "text-3xl text-darkColor font-black tracking-wider uppercase",
-          className,
-        )}
-      >
-        Gray
-        <span className="text-green group-hover:text-dark-green font-medium">
-          Hanger
-        </span>
-      </h2>
+    <Link
+      href="/"
+      aria-label="EON Clothing"
+      className={cn("inline-flex shrink-0", className)}
+    >
+      <Image
+        src="/images/EON_logo.png"
+        alt="EON Clothing"
+        width={120}
+        height={20}
+        priority={priority}
+        className="w-26 lg:w-full mb-1 lg:mb-0 lg:mt-1.5 object-cover"
+      />
     </Link>
   );
 };

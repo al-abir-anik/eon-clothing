@@ -1,96 +1,351 @@
+"use client";
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Product } from "../sanity.types";
 
-interface CartItem {
-  product: Product;
+export interface CartItem {
+  // Product
+  productId: string;
+  name: string;
+  slug: string | null;
+  sku: string | null;
+  image?: string;
+
+  // Variant
+  colorId: string | null;
+  colorName: string | null;
+  colorHex: string | null;
+
+  sizeId: string;
+  sizeName: string;
+
+  // Pricing
+  unitPrice: number;
+
+  // Quantity
   quantity: number;
-  size: string;
+
+  // Latest known stock
+  maxStock: number;
 }
+
+export interface AddItemData {
+  productId: string;
+  name: string;
+  slug?: string | null;
+  sku?: string | null;
+  image?: string;
+
+  colorId?: string | null;
+  colorName?: string | null;
+  colorHex?: string | null;
+
+  sizeId: string;
+  sizeName: string;
+
+  unitPrice: number;
+  maxStock: number;
+
+  quantity?: number;
+}
+
 interface CartState {
   items: CartItem[];
-  addItem: (product: Product, size: string) => void;
-  removeItem: (productId: string) => void;
-  deleteCartProduct: (productId: string, size?: string) => void;
-  resetCart: () => void;
-  getItemCount: (productId: string, size?: string) => number;
-  getSubtotalPrice: () => number;
-  getTotalPrice: () => number;
-  getGroupedItems: () => CartItem[];
+  hasHydrated: boolean;
+
+  // Cart actions
+  addItem: (data: AddItemData) => boolean;
+  updateQuantity: (
+    productId: string,
+    sizeId: string,
+    colorId: string | null,
+    quantity: number,
+  ) => boolean;
+
+  removeItem: (
+    productId: string,
+    sizeId: string,
+    colorId?: string | null,
+  ) => void;
+
+  deleteItem: (
+    productId: string,
+    sizeId: string,
+    colorId?: string | null,
+  ) => void;
+
+  clearCart: () => void;
+
+  // Helpers
+  getItemQuantity: (
+    productId: string,
+    sizeId: string,
+    colorId?: string | null,
+  ) => number;
+
+  getSubtotal: () => number;
+  getTotalItems: () => number;
+
+  setHasHydrated: (state: boolean) => void;
 }
+
+const getVariantKey = (
+  productId: string,
+  sizeId: string,
+  colorId: string | null = null,
+) => {
+  return `${productId}::${sizeId}::${colorId ?? "no-color"}`;
+};
 
 const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
-      //   add product quantity to cart
-      addItem: (product, size) =>
-        set((state) => {
-          const exitingItem = state.items.find(
-            (item) => item.product._id === product._id && item.size === size,
-          );
-          if (exitingItem) {
-            return {
-              items: state.items.map((item) =>
-                item.product._id === product._id && item.size === size
-                  ? { ...item, quantity: item.quantity + 1 }
-                  : item,
-              ),
-            };
-          } else {
-            return { items: [...state.items, { product, quantity: 1, size }] };
+      hasHydrated: false,
+
+      // ============================================================
+      // ADD ITEM
+      // ============================================================
+
+      addItem: (data) => {
+        const quantityToAdd = Math.max(1, data.quantity ?? 1);
+
+        if (data.maxStock <= 0) {
+          return false;
+        }
+
+        const colorId = data.colorId ?? null;
+
+        const existingIndex = get().items.findIndex(
+          (item) =>
+            getVariantKey(item.productId, item.sizeId, item.colorId) ===
+            getVariantKey(data.productId, data.sizeId, colorId),
+        );
+
+        // ----------------------------------------------------------
+        // Existing item
+        // ----------------------------------------------------------
+
+        if (existingIndex !== -1) {
+          const existingItem = get().items[existingIndex];
+
+          const newQuantity = existingItem.quantity + quantityToAdd;
+
+          if (newQuantity > data.maxStock) {
+            return false;
           }
-        }),
-      // remove product quantity from cart
-      removeItem: (productId) =>
+
+          set((state) => ({
+            items: state.items.map((item, index) =>
+              index === existingIndex
+                ? {
+                    ...item,
+
+                    // Keep latest product information
+                    name: data.name,
+                    slug: data.slug ?? null,
+                    sku: data.sku ?? null,
+                    image: data.image,
+
+                    colorName: data.colorName ?? null,
+                    colorHex: data.colorHex ?? null,
+
+                    unitPrice: data.unitPrice,
+
+                    quantity: newQuantity,
+
+                    // Latest known stock
+                    maxStock: data.maxStock,
+                  }
+                : item,
+            ),
+          }));
+
+          return true;
+        }
+
+        // ----------------------------------------------------------
+        // New item
+        // ----------------------------------------------------------
+
+        if (quantityToAdd > data.maxStock) {
+          return false;
+        }
+
+        const newItem: CartItem = {
+          productId: data.productId,
+          name: data.name,
+          slug: data.slug ?? null,
+          sku: data.sku ?? null,
+          image: data.image,
+
+          colorId,
+          colorName: data.colorName ?? null,
+          colorHex: data.colorHex ?? null,
+
+          sizeId: data.sizeId,
+          sizeName: data.sizeName,
+
+          unitPrice: data.unitPrice,
+
+          quantity: quantityToAdd,
+          maxStock: data.maxStock,
+        };
+
         set((state) => ({
-          items: state.items.reduce((acc, item) => {
-            if (item.product._id === productId) {
-              if (item.quantity > 1) {
-                acc.push({ ...item, quantity: item.quantity - 1 });
-              }
-            } else {
-              acc.push(item);
-            }
-            return acc;
-          }, [] as CartItem[]),
-        })),
-      // delete product from cart
-      deleteCartProduct: (productId, size) =>
+          items: [...state.items, newItem],
+        }));
+
+        return true;
+      },
+
+      // ============================================================
+      // UPDATE QUANTITY
+      // ============================================================
+
+      updateQuantity: (productId, sizeId, colorId = null, quantity) => {
+        const safeQuantity = Math.floor(quantity);
+
+        if (safeQuantity < 1) {
+          return false;
+        }
+
+        const item = get().items.find(
+          (item) =>
+            item.productId === productId &&
+            item.sizeId === sizeId &&
+            item.colorId === colorId,
+        );
+
+        if (!item) {
+          return false;
+        }
+
+        if (safeQuantity > item.maxStock) {
+          return false;
+        }
+
+        set((state) => ({
+          items: state.items.map((item) =>
+            item.productId === productId &&
+            item.sizeId === sizeId &&
+            item.colorId === colorId
+              ? {
+                  ...item,
+                  quantity: safeQuantity,
+                }
+              : item,
+          ),
+        }));
+
+        return true;
+      },
+
+      // ============================================================
+      // REMOVE ONE
+      // ============================================================
+
+      removeItem: (productId, sizeId, colorId = null) => {
+        const item = get().items.find(
+          (item) =>
+            item.productId === productId &&
+            item.sizeId === sizeId &&
+            item.colorId === colorId,
+        );
+
+        if (!item) return;
+
+        if (item.quantity <= 1) {
+          get().deleteItem(productId, sizeId, colorId);
+          return;
+        }
+
+        get().updateQuantity(productId, sizeId, colorId, item.quantity - 1);
+      },
+
+      // ============================================================
+      // DELETE ITEM
+      // ============================================================
+
+      deleteItem: (productId, sizeId, colorId = null) => {
         set((state) => ({
           items: state.items.filter(
-            (item) => !(item.product._id === productId && item.size === size),
+            (item) =>
+              !(
+                item.productId === productId &&
+                item.sizeId === sizeId &&
+                item.colorId === colorId
+              ),
           ),
-        })),
-      // reset user cart
-      resetCart: () => set({ items: [] }),
-      // get Item count
-      getItemCount: (productId, size) => {
+        }));
+      },
+
+      // ============================================================
+      // CLEAR CART
+      // ============================================================
+
+      clearCart: () => {
+        set({
+          items: [],
+        });
+      },
+
+      // ============================================================
+      // GET ITEM QUANTITY
+      // ============================================================
+
+      getItemQuantity: (productId, sizeId, colorId = null) => {
         const item = get().items.find(
-          (item) => item.product._id === productId && item.size === size,
+          (item) =>
+            item.productId === productId &&
+            item.sizeId === sizeId &&
+            item.colorId === colorId,
         );
-        return item ? item.quantity : 0;
+
+        return item?.quantity ?? 0;
       },
-      // get subtotal price of product
-      getSubtotalPrice: () => {
-        return get().items.reduce((total, item) => {
-          const price = item.product.price ?? 0;
-          // const regularPrice = ((item.product.regularPrice ?? 0) * price) / 100;
-          return total + price * item.quantity;
-        }, 0);
-      },
-      // get total price of all cart products
-      getTotalPrice: () => {
+
+      // ============================================================
+      // SUBTOTAL
+      // ============================================================
+
+      getSubtotal: () => {
         return get().items.reduce(
-          (total, item) => total + (item.product.price ?? 0) * item.quantity,
+          (total, item) => total + item.unitPrice * item.quantity,
           0,
         );
       },
-      // get grouped items
-      getGroupedItems: () => get().items,
+
+      // ============================================================
+      // TOTAL ITEMS
+      // ============================================================
+
+      getTotalItems: () => {
+        return get().items.reduce((total, item) => total + item.quantity, 0);
+      },
+
+      // ============================================================
+      // HYDRATION
+      // ============================================================
+
+      setHasHydrated: (state) => {
+        set({
+          hasHydrated: state,
+        });
+      },
     }),
 
-    { name: "cart-store" },
+    {
+      name: "eon-cart",
+
+      onRehydrateStorage: () => {
+        return (state, error) => {
+          if (!error) {
+            state?.setHasHydrated(true);
+          }
+        };
+      },
+    },
   ),
 );
 

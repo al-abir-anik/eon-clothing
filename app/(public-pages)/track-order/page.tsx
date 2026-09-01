@@ -1,9 +1,12 @@
+import Container from "@/components/layout/Container"
 
 const TrackOrderPage = () => {
     return (
+       <Container>
         <div>
-            Track Order PAge
+            aaaaaaaaaaa
         </div>
+       </Container>
     );
 };
 
