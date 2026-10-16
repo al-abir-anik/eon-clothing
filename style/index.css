@@ -1,51 +1,177 @@
 @import "tailwindcss";
 
-@theme inline {
-  --color-darkColor: #151515;
-  --color-lightColor: #52525b;
-  --color-lightOrange: #fca99b;
-  --color-lightBlue: #7688db;
-  --color-darkBlue: #6c7fd8;
-  --color-darkText: #686e7d;
-  --color-lightBg: #f8f8fb;
-  --font-sans: var(--font-sans);
+@theme {
+  --font-sans: var(--font-urbanist);
 }
 
-@layer base {
-  * button {
-    @apply cursor-pointer;
-  }
-  .input-box {
-    @apply w-full px-3 py-2.5 border rounded-xs outline-none overflow-hidden placeholder:text-gray-300;
-  }
+html,
+body {
+  font-family: var(--font-urbanist), sans-serif;
 }
+
+/* textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+} */
+
+/* img {
+  max-width: 100%;
+} */
+
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------- */
+/* --------------------------------------------- */
+/* --------------------------------------------- */
+/* --------------------------------------------- */
 
 /* mobile filter drawer transition */
 @keyframes slideUp {
   from {
     transform: translateY(100%);
   }
-
   to {
     transform: translateY(0);
   }
 }
 
-.animate-slide-up {
-  animation: slideUp 300ms ease-out;
+/* ---------------------------------------------
+   EON — Quick Add Modal
+   --------------------------------------------- */
+.quick-add {
+  position: fixed;
+  inset: auto 0 0 0;
+
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  max-height: 92dvh;
+  height: auto;
+
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+
+  border: 0;
+  border-radius: 15px 15px 0 0;
+
+  background: white;
+  box-shadow: 0 -10px 40px rgb(0 0 0 / 12%);
+
+  opacity: 0;
+  transform: translateY(100%);
+
+  transition:
+    opacity 220ms ease,
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    display 300ms allow-discrete,
+    overlay 300ms allow-discrete;
 }
 
-/* Cart Scrollbar */
-.cart-scroll::-webkit-scrollbar {
-  width: 1px;
+.quick-add[open] {
+  opacity: 1;
+  transform: translateY(0);
 }
-.cart-scroll::-webkit-scrollbar-track {
-  background: #e5e7eb;
+
+@starting-style {
+  .quick-add[open] {
+    opacity: 0;
+    transform: translateY(100%);
+  }
 }
-.cart-scroll::-webkit-scrollbar-thumb {
-  background-color: #fff;
+
+/* Backdrop */
+.quick-add::backdrop {
+  background: rgb(0 0 0 / 35%);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+
+  transition:
+    opacity 200ms ease,
+    display 200ms allow-discrete,
+    overlay 200ms allow-discrete;
+}
+
+.quick-add[open]::backdrop {
+  opacity: 1;
+}
+
+@starting-style {
+  .quick-add[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+/* Scrollable content */
+.quick-add-scroll {
+  width: 100%;
+  max-width: 100%;
+  max-height: calc(92dvh - 58px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Desktop modal */
+@media (min-width: 540px) {
+  .quick-add {
+    inset: 50% auto auto 50%;
+
+    width: min(420px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+    max-height: min(560px, calc(100dvh - 32px));
+
+    border-radius: 12px;
+
+    transform: translate(-50%, -48%) scale(0.96);
+
+    transition:
+      opacity 180ms ease,
+      transform 180ms ease,
+      display 180ms allow-discrete,
+      overlay 180ms allow-discrete;
+  }
+
+  .quick-add[open] {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .quick-add-scroll {
+    max-height: calc(min(560px, 100dvh - 32px) - 58px);
+  }
+
+  @starting-style {
+    .quick-add[open] {
+      opacity: 0;
+      transform: translate(-50%, -48%) scale(0.96);
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────
+   EON — Custom Scrollbar
+   ───────────────────────────────────────────── */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #d0d0d0 transparent;
+}
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
   border-radius: 9999px;
 }
-.cart-scroll::-webkit-scrollbar-thumb:hover {
-  background-color: #222;
+::-webkit-scrollbar-thumb:hover {
+  background: #999;
 }

@@ -1,20 +1,25 @@
-import { type SchemaTypeDefinition } from "sanity";
-import { productType } from "./productSchema";
-import { categoryType } from "./categorySchema";
-import { productTypeType } from "./productTypeSchema";
-import { baseGarmentType } from "./baseGarmentSchema";
-import { orderType } from "./orderSchema";
-import { colorType } from "./colorSchema";
-import { sizeType } from "./sizeSchema";
+import { categoryType } from "./category";
+import { comboType } from "./combo";
+import { customerType } from "./customer";
+import { discountType } from "./discount";
+import { expenseType } from "./expense";
+import { orderType } from "./order";
+import { productType } from "./product";
+import { productProfileType } from "./productProfile";
+import { reviewType } from "./review";
+import { siteSettingsType } from "./siteSettings";
 
-export const schema: { types: SchemaTypeDefinition[] } = {
+export const schema = {
   types: [
     productType,
-    categoryType,
-    productTypeType,
-    baseGarmentType,
-    colorType,
-    sizeType,
+    comboType,
     orderType,
+    productProfileType,
+    categoryType,
+    customerType,
+    reviewType,
+    discountType,
+    expenseType,
+    siteSettingsType,
   ],
 };

@@ -1,192 +1,190 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import {
+  ArrowUpRight,
+  Facebook,
+  Instagram,
+  Mail,
+  MessageCircle,
+  Phone,
+} from "lucide-react";
+import { footerConfig } from "@/config/site";
 
-import Logo from "../Logo";
-import SocialMedia from "../SocialMedia";
-import Container from "./Container";
-import { contactConfig } from "@/constants/contact";
+export function Footer() {
+  const { contact, social, footer } = footerConfig;
 
-const shopLinks = [
-  { title: "Shop All", href: "/shop" },
-  { title: "New Arrivals", href: "/shop?sort=newest" },
-  { title: "Best Sellers", href: "/shop?sort=popular" },
-];
+  const whatsappNumber = social.whatsappNumber.replace(/\D/g, "");
+  const phoneDigits = contact.phone.replace(/\D/g, "");
 
-const customerLinks = [
-  { title: "Track Order", href: "/track-order" },
-  { title: "Contact Us", href: "/contact" },
-  { title: "FAQ", href: "/faq" },
-  { title: "Shipping & Delivery", href: "/shipping" },
-];
+  const whatsappHref =
+    whatsappNumber && !/^0+$/.test(whatsappNumber)
+      ? `https://wa.me/${whatsappNumber}`
+      : "";
 
-const legalLinks = [
-  { title: "Privacy Policy", href: "/privacy-policy" },
-  { title: "Terms & Conditions", href: "/terms" },
-  { title: "Return Policy", href: "/return-policy" },
-];
+  const phoneHref =
+    phoneDigits && !/^0+$/.test(phoneDigits)
+      ? `tel:${contact.phone.replace(/[^\d+]/g, "")}`
+      : "";
 
-const Footer = () => {
+  const email =
+    contact.email && !contact.email.includes("example.com")
+      ? contact.email
+      : "";
+
+  const socialLinks = [
+    { label: "Facebook", href: social.facebook, Icon: Facebook },
+    { label: "Instagram", href: social.instagram, Icon: Instagram },
+    { label: "WhatsApp", href: whatsappHref, Icon: MessageCircle },
+    { label: "TikTok", href: social.tiktok, Icon: null },
+    { label: "YouTube", href: social.youtube, Icon: null },
+  ].filter((item) => item.href.length > 0);
+
   return (
-    <footer className="mt-20 border-t border-black/10 bg-white">
-      <Container>
-        {/* Main footer */}
-        <div className="grid grid-cols-1 gap-12 py-14 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8 lg:py-16">
+    <footer className="border-t border-white/10 bg-[#171717] text-[#F8F5EF]">
+      <div className="mx-auto max-w-360 px-5 sm:px-8 lg:px-10">
+        <div className="grid grid-cols-1 gap-10 py-12 sm:grid-cols-2 sm:gap-x-10 sm:gap-y-12 lg:grid-cols-[1.4fr_0.8fr_0.8fr] lg:gap-16 lg:py-16">
           {/* Brand */}
-          <div className="lg:col-span-5">
-            <Logo className="text-xl" />
-
-            <p className="mt-2 max-w-sm text-sm leading-6 text-black/60">
-              {contactConfig.company.description}
+          <section aria-label="EON Clothing">
+            <p className="mb-5 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#D66A5E]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#D66A5E]" />
+              Made for your everyday era
             </p>
 
-            <div className="mt-6">
-              <SocialMedia
-                className="text-black/60"
-                iconClassName="border-black/15 hover:border-black hover:text-black"
-              />
+            <Link
+              href="/"
+              aria-label={`${footerConfig.brandName} home`}
+              className="group inline-block"
+            >
+              <span className="block text-[clamp(4.5rem,10vw,6rem)] font-black leading-[0.78] tracking-tighter transition-colors duration-300 group-hover:text-[#D66A5E]">
+                EON<span className="text-[#D66A5E]">.</span>
+              </span>
+            </Link>
+
+            <p className="mt-7 max-w-sm text-sm leading-7 text-white/55 sm:text-base">
+              {footerConfig.description}
+            </p>
+          </section>
+
+          {/* Information */}
+          <nav aria-label="Customer care">
+            <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/40">
+              Information
+            </h2>
+
+            <ul className="mt-6 flex flex-col items-start gap-4">
+              {footer.information.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="text-sm text-white/65 transition-colors duration-200 hover:text-[#F8F5EF]"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Contact and social links */}
+          <section aria-label="Contact and social media">
+            <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/40">
+              Contact
+            </h2>
+
+            <address className="mt-6 flex flex-col items-start gap-4 not-italic">
+              {phoneHref && (
+                <a
+                  href={phoneHref}
+                  className="flex items-center gap-3 text-sm text-white/70 transition-colors hover:text-white tracking-wide"
+                >
+                  <Phone
+                    size={15}
+                    strokeWidth={1.6}
+                    className="shrink-0 text-white/40"
+                  />
+                  {contact.phone}
+                </a>
+              )}
+
+              {email && (
+                <a
+                  href={`mailto:${email}`}
+                  className="flex items-center gap-3 text-sm text-white/70 transition-colors hover:text-white tracking-wide"
+                >
+                  <Mail
+                    size={15}
+                    strokeWidth={1.6}
+                    className="shrink-0 text-white/40"
+                  />
+                  <span className="break-all">{email}</span>
+                </a>
+              )}
+            </address>
+
+            <div className="mt-8 border-t border-white/10 pt-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
+                Connect with us
+              </p>
+
+              <ul className="mt-4 flex flex-wrap gap-2">
+                {socialLinks.map(({ label, href, Icon }) => (
+                  <li key={label}>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Connect with EON on ${label} (opens in a new tab)`}
+                      title={label}
+                      className="group flex h-10 items-center gap-2 border border-white/10 px-3 text-xs text-white/65 transition-colors duration-200 hover:border-[#D66A5E]/60 hover:bg-white/3 hover:text-white"
+                    >
+                      {Icon ? (
+                        <Icon size={15} strokeWidth={1.7} />
+                      ) : (
+                        <span className="text-[10px] font-bold">
+                          {label === "TikTok" ? "TK" : "YT"}
+                        </span>
+                      )}
+
+                      {label}
+
+                      <ArrowUpRight
+                        size={11}
+                        className="text-white/30 transition-colors group-hover:text-[#D66A5E]"
+                      />
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
-
-          {/* Shop */}
-          <FooterColumn title="Shop" links={shopLinks} />
-
-          {/* Customer */}
-          <FooterColumn title="Customer Care" links={customerLinks} />
-
-          {/* Newsletter */}
-          <div className="lg:col-span-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wider">
-              Stay in the loop
-            </h3>
-
-            <p className="mt-4 text-sm leading-6 text-black/60">
-              Subscribe for new arrivals, exclusive offers and updates.
-            </p>
-
-            <form className="mt-5 flex border-b border-black/30">
-              <input
-                type="email"
-                placeholder="Your email address"
-                aria-label="Email address"
-                className="min-w-0 flex-1 bg-transparent py-3 text-sm outline-none placeholder:text-black/40"
-              />
-
-              <button
-                type="submit"
-                aria-label="Subscribe"
-                className="flex items-center justify-center px-2 text-black transition-transform hover:translate-x-1"
-              >
-                <ArrowUpRight className="h-5 w-5" />
-              </button>
-            </form>
-          </div>
+          </section>
         </div>
 
-        {/* Contact strip */}
-        <div className="grid grid-cols-1 gap-4 border-t border-black/10 py-7 text-sm sm:grid-cols-3">
-          <ContactItem
-            label="Call"
-            value={contactConfig.company.phone}
-            href={`tel:${contactConfig.company.phone}`}
-          />
-
-          <ContactItem
-            label="Email"
-            value={contactConfig.emails.support}
-            href={`mailto:${contactConfig.emails.support}`}
-          />
-
-          <ContactItem
-            label="Location"
-            value={contactConfig.company.city}
-          />
-        </div>
-
-        {/* Bottom */}
-        <div className="flex flex-col gap-5 border-t border-black/10 py-6 text-xs text-black/50 sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            © {new Date().getFullYear()} EON Clothing. All rights reserved.
+        {/* Bottom bar */}
+        <div className="flex flex-col gap-4 border-t border-white/10 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[11px] text-white/40">
+            © {new Date().getFullYear()} {footerConfig.brandName}. All rights
+            reserved.
           </p>
 
-          <div className="flex flex-wrap gap-x-5 gap-y-2">
-            {legalLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="transition-colors hover:text-black"
-              >
-                {link.title}
-              </Link>
-            ))}
-          </div>
+          <nav aria-label="Legal information">
+            <ul className="flex flex-wrap gap-x-5 gap-y-3">
+              {footer.legal.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="text-[11px] text-white/45 transition-colors hover:text-white"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <p className="text-[11px] tracking-wide text-white/40">
+            {footerConfig.tagline}
+          </p>
         </div>
-      </Container>
+      </div>
     </footer>
   );
-};
-
-interface FooterColumnProps {
-  title: string;
-  links: {
-    title: string;
-    href: string;
-  }[];
 }
-
-const FooterColumn = ({ title, links }: FooterColumnProps) => {
-  return (
-    <div className="lg:col-span-2">
-      <h3 className="text-sm font-semibold uppercase tracking-wider">
-        {title}
-      </h3>
-
-      <ul className="mt-5 space-y-3">
-        {links.map((link) => (
-          <li key={link.href}>
-            <Link
-              href={link.href}
-              className="text-sm text-black/60 transition-colors hover:text-black"
-            >
-              {link.title}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
-
-interface ContactItemProps {
-  label: string;
-  value: string;
-  href?: string;
-}
-
-const ContactItem = ({ label, value, href }: ContactItemProps) => {
-  const content = (
-    <>
-      <span className="block text-[10px] font-semibold uppercase tracking-wider text-black/40">
-        {label}
-      </span>
-
-      <span className="mt-1 block text-sm text-black/70">
-        {value}
-      </span>
-    </>
-  );
-
-  if (href) {
-    return (
-      <Link
-        href={href}
-        className="transition-colors hover:text-black"
-      >
-        {content}
-      </Link>
-    );
-  }
-
-  return <div>{content}</div>;
-};
-
-export default Footer;
