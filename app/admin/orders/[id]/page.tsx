@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -6,7 +5,6 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock3,
-  CreditCard,
   MapPin,
   Package,
   ReceiptText,
@@ -261,143 +259,26 @@ export default async function AdminOrderDetailPage({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:min-w-[320px]">
+          {/* Source replaces the old order total and items metrics */}
+          <div className="sm:min-w-[220px]">
             <div className="rounded-xl border border-white/10 bg-white/6 p-4">
-              <p className="text-xs font-medium text-neutral-400">
-                Order total
-              </p>
-              <p className="mt-2 text-2xl font-bold tracking-tight">
-                {formatMoney(order.total)}
+              <p className="text-xs font-medium text-neutral-400">Source</p>
+              <p className="mt-2 break-words text-lg font-semibold tracking-tight text-white">
+                {order.source || "Not recorded"}
               </p>
               <p className="mt-1 text-[11px] text-neutral-400">
-                {order.paymentMethod.toUpperCase()}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-white/10 bg-white/6 p-4">
-              <p className="text-xs font-medium text-neutral-400">
-                Items ordered
-              </p>
-              <p className="mt-2 text-2xl font-bold tracking-tight">
-                {order.items.reduce((sum, item) => sum + item.quantity, 0)}
-              </p>
-              <p className="mt-1 text-[11px] text-neutral-400">
-                {order.items.length} line
-                {order.items.length === 1 ? "" : "s"}
+                Order acquisition source
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_350px]">
-        <div className="min-w-0 space-y-5">
-          {/* Customer */}
-          <Card>
-            <div className="border-b border-neutral-100 px-5 py-4">
-              <SectionHeading
-                icon={UserRound}
-                title="Customer"
-                subtitle="Customer contact information"
-                accent="blue"
-              />
-            </div>
-
-            <div className="grid gap-x-6 gap-y-5 p-5 sm:grid-cols-2 lg:grid-cols-3">
-              <InfoItem label="Full name">
-                <span className="font-semibold text-neutral-950">
-                  {order.customerSnapshot.name}
-                </span>
-              </InfoItem>
-
-              <InfoItem label="Phone number">
-                <a
-                  href={`tel:${order.customerSnapshot.phone}`}
-                  className="font-medium text-blue-700 transition hover:text-blue-900 hover:underline"
-                >
-                  {order.customerSnapshot.phone}
-                </a>
-              </InfoItem>
-
-              {order.customerSnapshot.email && (
-                <InfoItem label="Email">
-                  <span className="break-all">
-                    {order.customerSnapshot.email}
-                  </span>
-                </InfoItem>
-              )}
-
-              {order.customer && (
-                <InfoItem label="Customer record">
-                  <Link
-                    href={`/admin/customers/${order.customer._id}`}
-                    className="inline-flex items-center gap-1 font-semibold text-blue-700 hover:text-blue-900"
-                  >
-                    View customer
-                    <ArrowUpRight size={13} />
-                  </Link>
-                </InfoItem>
-              )}
-            </div>
-          </Card>
-
-          {/* Delivery */}
-          <Card>
-            <div className="border-b border-neutral-100 px-5 py-4">
-              <SectionHeading
-                icon={MapPin}
-                title="Delivery information"
-                subtitle="Destination and shipping details"
-                accent="orange"
-              />
-            </div>
-
-            <div className="grid gap-5 p-5 sm:grid-cols-2">
-              <InfoItem label="Delivery zone">
-                <span className="inline-flex items-center gap-2 font-medium">
-                  <MapPin size={15} className="text-orange-500" />
-                  {order.shippingZoneType === "dhaka_city"
-                    ? "Dhaka City"
-                    : "Outside Dhaka"}
-                </span>
-              </InfoItem>
-
-              <InfoItem label="Shipping status">
-                <StatusBadge status={order.shippingStatus} />
-              </InfoItem>
-
-              <InfoItem label="Delivery address" className="sm:col-span-2">
-                <p className="whitespace-pre-wrap leading-6">
-                  {order.customerSnapshot.address}
-                </p>
-              </InfoItem>
-
-              {order.customerSnapshot.deliveryNotes && (
-                <InfoItem label="Delivery notes" className="sm:col-span-2">
-                  <p className="whitespace-pre-wrap leading-6 text-neutral-600">
-                    {order.customerSnapshot.deliveryNotes}
-                  </p>
-                </InfoItem>
-              )}
-
-              {order.courier && (
-                <InfoItem label="Courier">
-                  {order.courier}
-                </InfoItem>
-              )}
-
-              {order.trackingNumber && (
-                <InfoItem label="Tracking number">
-                  <span className="font-semibold text-neutral-950">
-                    {order.trackingNumber}
-                  </span>
-                </InfoItem>
-              )}
-            </div>
-          </Card>
-
-          {/* Items */}
+      {/* Main content: two-column layout */}
+      <div className="grid items-start gap-5 xl:grid-cols-3">
+        {/* LEFT COLUMN */}
+        <div className="xl:col-span-2 min-w-0 space-y-5">
+          {/* 1. Order items */}
           <Card>
             <div className="flex items-center justify-between gap-3 border-b border-neutral-100 px-5 py-4">
               <SectionHeading
@@ -444,14 +325,17 @@ export default async function AdminOrderDetailPage({
                                 {item.color}
                               </span>
                             )}
+
                             {item.size && (
                               <span className="rounded-md bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700">
                                 Size: {item.size}
                               </span>
                             )}
+
                             <span className="rounded-md bg-violet-50 px-2 py-1 text-[11px] font-semibold text-violet-700">
                               Qty: {item.quantity}
                             </span>
+
                             {item.itemType === "combo" && (
                               <span className="rounded-md bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-700">
                                 Combo
@@ -497,6 +381,7 @@ export default async function AdminOrderDetailPage({
                                     .join(" · ")}
                                 </p>
                               </div>
+
                               <span className="shrink-0 rounded-md bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700">
                                 ×{selection.quantity}
                               </span>
@@ -510,7 +395,28 @@ export default async function AdminOrderDetailPage({
             </div>
           </Card>
 
-          {/* Status history */}
+          {/* 2. Manage order */}
+          <Card>
+            <div className="border-b border-neutral-100 px-5 py-4">
+              <SectionHeading
+                icon={CheckCircle2}
+                title="Manage order"
+                subtitle="Update order and shipping statuses"
+                accent="emerald"
+              />
+            </div>
+
+            <div className="p-4">
+              <StatusEditor
+                orderId={order._id}
+                orderStatus={order.orderStatus}
+                shippingStatus={order.shippingStatus}
+                paymentStatus={order.paymentStatus}
+              />
+            </div>
+          </Card>
+
+          {/* 3. Status history */}
           {order.statusHistory && order.statusHistory.length > 0 && (
             <Card>
               <div className="border-b border-neutral-100 px-5 py-4">
@@ -559,29 +465,9 @@ export default async function AdminOrderDetailPage({
           )}
         </div>
 
-        {/* Right sidebar */}
-        <aside className="min-w-0 space-y-5 xl:sticky xl:top-5">
-          <Card>
-            <div className="border-b border-neutral-100 px-5 py-4">
-              <SectionHeading
-                icon={CheckCircle2}
-                title="Manage order"
-                subtitle="Update order and shipping statuses"
-                accent="emerald"
-              />
-            </div>
-
-            <div className="p-4">
-              <StatusEditor
-                orderId={order._id}
-                orderStatus={order.orderStatus}
-                shippingStatus={order.shippingStatus}
-                paymentStatus={order.paymentStatus}
-              />
-            </div>
-          </Card>
-
-          {/* Order summary */}
+        {/* RIGHT COLUMN */}
+        <aside className="xl:col-span-1 min-w-0 space-y-5 xl:sticky xl:top-5">
+          {/* 1. Order summary */}
           <Card>
             <div className="border-b border-neutral-100 px-5 py-4">
               <SectionHeading
@@ -622,43 +508,99 @@ export default async function AdminOrderDetailPage({
                 </div>
               )}
 
-              <div className="rounded-xl bg-neutral-950 p-4 text-white">
-                <p className="text-xs font-medium text-neutral-400">
+              <div className="mt-5 border-t border-neutral-200 pt-4 flex items-center justify-between gap-3">
+                <span className="text-sm font-medium text-neutral-600">
                   Total payable
-                </p>
-                <p className="mt-1 text-2xl font-bold tracking-tight">
+                </span>
+
+                <span className="text-xl font-bold tracking-tight text-neutral-950">
                   {formatMoney(order.total)}
-                </p>
-                <div className="mt-3 flex items-center gap-1.5 text-xs text-neutral-400">
-                  <CreditCard size={13} />
-                  {order.paymentMethod.toUpperCase()}
-                </div>
+                </span>
               </div>
             </div>
           </Card>
 
-          {/* Payment */}
+          {/* 2. Customer details */}
           <Card>
             <div className="border-b border-neutral-100 px-5 py-4">
               <SectionHeading
-                icon={CreditCard}
-                title="Payment"
-                accent="emerald"
+                icon={UserRound}
+                title="Customer details"
+                subtitle="Customer contact information"
+                accent="blue"
               />
             </div>
 
-            <div className="space-y-4 p-5 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-neutral-500">Method</span>
-                <span className="font-semibold uppercase text-neutral-900">
-                  {order.paymentMethod}
+            <div className="space-y-5 p-5">
+              <InfoItem label="Full name">
+                <span className="font-semibold text-neutral-950">
+                  {order.customerSnapshot.name}
                 </span>
-              </div>
+              </InfoItem>
 
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-neutral-500">Status</span>
-                <StatusBadge status={order.paymentStatus} />
-              </div>
+              <InfoItem label="Phone number">
+                <a
+                  href={`tel:${order.customerSnapshot.phone}`}
+                  className="font-medium text-blue-700 transition hover:text-blue-900 hover:underline"
+                >
+                  {order.customerSnapshot.phone}
+                </a>
+              </InfoItem>
+
+              {order.customerSnapshot.email && (
+                <InfoItem label="Email">
+                  <span className="break-all">
+                    {order.customerSnapshot.email}
+                  </span>
+                </InfoItem>
+              )}
+
+              <InfoItem label="Delivery address">
+                <p className="whitespace-pre-wrap leading-6 font-semibold">
+                  {order.customerSnapshot.address}
+                </p>
+              </InfoItem>
+
+              <InfoItem label="Delivery zone">
+                <span className="inline-flex items-center gap-2 font-medium">
+                  <MapPin size={15} className="text-orange-500" />
+                  {order.shippingZoneType === "dhaka_city"
+                    ? "Inside Dhaka"
+                    : "Outside Dhaka"}
+                </span>
+              </InfoItem>
+
+              {order.customerSnapshot.deliveryNotes && (
+                <InfoItem label="Delivery notes">
+                  <p className="whitespace-pre-wrap leading-6 text-neutral-600">
+                    {order.customerSnapshot.deliveryNotes}
+                  </p>
+                </InfoItem>
+              )}
+
+              {order.customer && (
+                <InfoItem label="Customer record">
+                  <Link
+                    href={`/admin/customers/${order.customer._id}`}
+                    className="inline-flex items-center gap-1 font-semibold text-blue-700 hover:text-blue-900"
+                  >
+                    View customer
+                    <ArrowUpRight size={13} />
+                  </Link>
+                </InfoItem>
+              )}
+
+              {order.courier && (
+                <InfoItem label="Courier">{order.courier}</InfoItem>
+              )}
+
+              {order.trackingNumber && (
+                <InfoItem label="Tracking number">
+                  <span className="font-semibold text-neutral-950">
+                    {order.trackingNumber}
+                  </span>
+                </InfoItem>
+              )}
             </div>
           </Card>
 
@@ -778,10 +720,7 @@ export default async function AdminOrderDetailPage({
           {(order.customerNote || order.internalNote) && (
             <Card>
               <div className="border-b border-neutral-100 px-5 py-4">
-                <SectionHeading
-                  icon={ReceiptText}
-                  title="Notes"
-                />
+                <SectionHeading icon={ReceiptText} title="Notes" />
               </div>
 
               <div className="space-y-4 p-5">

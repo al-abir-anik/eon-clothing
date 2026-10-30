@@ -353,79 +353,92 @@ export function OrderSummary({
   }
 
   return (
-    <aside className="min-w-0 border border-neutral-200 bg-white p-4 sm:p-5">
+    <aside className="min-w-0 overflow-hidden rounded-xs border border-neutral-300 bg-white">
       {/* HEADER */}
-      <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-        <h2 className="text-base font-semibold text-neutral-950 tracking-tight">
+      <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 sm:px-5 bg-neutral-50">
+        <h2 className="lg:text-lg font-semibold tracking-tight text-neutral-950">
           Order Summary
         </h2>
-        <span className="text-xs text-neutral-400">
+
+        <span className="shrink-0 rounded-xs bg-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-800">
           {items.length} {items.length === 1 ? "item" : "items"}
         </span>
       </div>
 
-      {/* ITEMS */}
-      <div className="divide-y divide-neutral-100">
+      {/* CART ITEMS */}
+      <div className="divide-y divide-neutral-100 px-4 sm:px-5">
         {items.map((item, index) => {
           const itemTotal = item.price * item.quantity;
 
           return (
             <div
               key={`${item.type}-${item.type === "product" ? item.productId : item.comboId}-${index}`}
-              className="flex gap-3 py-3"
+              className="flex gap-3 py-4"
             >
-              <div className="relative h-17 w-13.5 shrink-0 overflow-hidden bg-neutral-100">
+              <div className="relative h-[80px] w-[80px] shrink-0 overflow-hidden rounded bg-neutral-100">
                 {item.image ? (
                   <Image
                     src={urlFor(item.image)
-                      .width(108)
-                      .height(136)
+                      .width(140)
+                      .height(176)
                       .fit("crop")
                       .url()}
                     alt={item.name}
                     fill
-                    sizes="54px"
+                    sizes="70px"
                     className="object-cover"
                   />
-                ) : null}
+                ) : (
+                  <div className="flex h-full items-center justify-center text-xs text-neutral-400">
+                    Product
+                  </div>
+                )}
               </div>
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold text-neutral-950 sm:text-sm">
+                    <p className="line-clamp-2 text-sm font-semibold leading-5 text-neutral-950">
                       {item.name}
                     </p>
-                    <p className="mt-1 text-xs text-neutral-700 font-medium">
-                      {item.type === "product"
-                        ? `${item.color} / Size: ${item.size}`
-                        : "Combo"}
-                    </p>
-                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => removeItem(index)}
-                    aria-label={`Remove ${item.name}`}
-                    className="shrink-0 p-1 text-neutral-400 transition hover:text-red-600"
-                  >
-                    <Trash2 size={14} strokeWidth={1.8} />
-                  </button>
+                    {/* Product Variant / Combo Selections */}
+                    {item.type === "product" ? (
+                      <p className="mt-1.5 text-xs font-medium text-neutral-600">
+                        {item.color}
+                        <span className="mx-1">/</span>
+                        Size: {item.size}
+                      </p>
+                    ) : (
+                      <div className="mt-2 space-y-1 border-l-2 border-[#0284C7]/30 pl-2.5">
+                        {item.selections.map((selection, selectionIndex) => (
+                          <p
+                            key={`${selection.productId}-${selection.size}-${selectionIndex}`}
+                            className="text-xs font-medium leading-4 text-neutral-600"
+                          >
+                            {selection.color}
+                            <span className="mx-1">/</span>
+                            {selection.size}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="mt-2 flex items-center justify-between gap-2">
-                  <div className="inline-flex h-7 items-center border border-neutral-200">
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <div className="inline-flex h-8 items-center overflow-hidden rounded border border-neutral-200">
                     <button
                       type="button"
                       onClick={() => updateQuantity(index, item.quantity - 1)}
                       disabled={item.quantity <= 1}
                       aria-label="Decrease quantity"
-                      className="flex h-7 w-7 items-center justify-center text-neutral-600 hover:text-black disabled:cursor-not-allowed disabled:opacity-30"
+                      className="flex h-8 w-8 items-center justify-center text-neutral-600 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-30"
                     >
-                      <Minus size={12} />
+                      <Minus size={13} />
                     </button>
 
-                    <span className="flex h-7 min-w-7 items-center justify-center border-x border-neutral-200 px-1 text-xs">
+                    <span className="flex h-8 min-w-8 items-center justify-center border-x border-neutral-200 px-2 text-xs font-medium text-neutral-900">
                       {item.quantity}
                     </span>
 
@@ -433,15 +446,26 @@ export function OrderSummary({
                       type="button"
                       onClick={() => updateQuantity(index, item.quantity + 1)}
                       aria-label="Increase quantity"
-                      className="flex h-7 w-7 items-center justify-center text-neutral-600 hover:text-black"
+                      className="flex h-8 w-8 items-center justify-center text-neutral-600 transition hover:bg-neutral-100"
                     >
-                      <Plus size={12} />
+                      <Plus size={13} />
                     </button>
                   </div>
 
-                  <span className="text-xs font-semibold text-neutral-950 sm:text-sm">
-                    {formatMoney(itemTotal)}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className="shrink-0 text-sm font-semibold tabular-nums text-neutral-950">
+                      {formatMoney(itemTotal)}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => removeItem(index)}
+                      aria-label={`Remove ${item.name}`}
+                      className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-red-500 transition hover:bg-red-50 hover:text-red-600"
+                    >
+                      <Trash2 size={15} strokeWidth={1.8} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -450,15 +474,17 @@ export function OrderSummary({
       </div>
 
       {/* PRICE BREAKDOWN */}
-      <div className="space-y-2.5 border-t border-neutral-200 pt-3">
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-neutral-500">Subtotal</span>
-          <span className="font-medium">{formatMoney(displayedSubtotal)}</span>
+      <div className="mx-4 space-y-3 border-t border-neutral-200 py-4 sm:mx-5">
+        <div className="flex items-center justify-between gap-3 text-sm">
+          <span className="text-neutral-700 font-medium">Subtotal</span>
+          <span className="font-semibold tabular-nums text-neutral-900">
+            {formatMoney(displayedSubtotal)}
+          </span>
         </div>
 
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-neutral-500">Shipping</span>
-          <span className="font-medium">
+        <div className="flex items-center justify-between gap-3 text-sm">
+          <span className="text-neutral-700 font-medium">Delivery charge</span>
+          <span className="text-right font-semibold tabular-nums text-neutral-900">
             {!zoneType
               ? "Select location"
               : shippingLoading
@@ -468,20 +494,16 @@ export function OrderSummary({
                   : "Unavailable"}
           </span>
         </div>
-
-        {shippingQuote?.estimatedDeliveryTime ? (
-          <p className="text-right text-[10px] text-neutral-400">
-            Estimated delivery: {shippingQuote.estimatedDeliveryTime}
-          </p>
-        ) : null}
       </div>
 
-      {/* AUTOMATIC DISCOUNTS */}
+      {/* AUTOMATIC OFFERS */}
       {automaticDiscounts.length > 0 ? (
-        <div className="mt-3 space-y-2 border-t border-neutral-100 pt-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-neutral-600">Offers</span>
-            <span className="text-[10px] text-green-700">
+        <div className="mx-4 space-y-2 border-t border-neutral-100 py-4 sm:mx-5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-medium text-neutral-800">
+              Available offers
+            </span>
+            <span className="text-xs font-medium text-green-700">
               {discountLoading ? "Updating..." : "Applied"}
             </span>
           </div>
@@ -489,13 +511,14 @@ export function OrderSummary({
           {automaticDiscounts.map((discount) => (
             <div
               key={discount.id}
-              className="flex items-center justify-between gap-3 text-xs"
+              className="flex items-center justify-between gap-3 text-sm"
             >
-              <span className="flex min-w-0 items-center gap-1.5 text-neutral-600">
-                <Tag size={12} className="shrink-0 text-green-700" />
+              <span className="flex min-w-0 items-center gap-2 text-neutral-600">
+                <Tag size={14} className="shrink-0 text-green-700" />
                 <span className="truncate">{discount.name}</span>
               </span>
-              <span className="shrink-0 font-medium text-green-700">
+
+              <span className="shrink-0 font-medium tabular-nums text-green-700">
                 {formatDiscount(discount.discountAmount)}
               </span>
             </div>
@@ -504,13 +527,14 @@ export function OrderSummary({
       ) : null}
 
       {/* COUPON */}
-      <div className="mt-4 border-t border-neutral-100 pt-3">
+      <div className="mx-4 pb-4 sm:mx-5">
         <div className="flex min-w-0 gap-2">
           <div className="relative min-w-0 flex-1">
             <Tag
-              size={14}
-              className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400"
+              size={15}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
             />
+
             <input
               id="couponCode"
               type="text"
@@ -522,11 +546,11 @@ export function OrderSummary({
                   void handleApplyCoupon();
                 }
               }}
-              placeholder="Coupon code"
+              placeholder="Have a coupon?"
               maxLength={50}
               autoComplete="off"
               disabled={couponLoading}
-              className="h-9 w-full min-w-0 border border-neutral-200 bg-white pl-8 pr-2 text-xs uppercase outline-none placeholder:normal-case focus:border-neutral-950 disabled:opacity-50"
+              className="h-11 w-full min-w-0 rounded-lg border border-neutral-200 bg-white pl-9 pr-2 text-sm uppercase text-neutral-900 font-semibold tracking-wider outline-none transition placeholder:normal-case placeholder:text-neutral-400 focus:border-neutral-950 focus:ring-1 focus:ring-neutral-950 disabled:opacity-50"
             />
           </div>
 
@@ -534,25 +558,30 @@ export function OrderSummary({
             type="button"
             onClick={() => void handleApplyCoupon()}
             disabled={couponLoading || !couponCode.trim()}
-            className="h-9 shrink-0 bg-neutral-950 px-3 text-xs font-medium text-white transition hover:bg-[#B92E26] disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-11 shrink-0 rounded-lg bg-neutral-950 px-4 text-xs font-semibold text-white transition hover:bg-[#B92E26] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {couponLoading ? "Checking..." : "Apply"}
           </button>
         </div>
 
         {couponError ? (
-          <p className="mt-2 text-xs text-red-600">{couponError}</p>
+          <p role="alert" className="mt-2 text-xs text-red-600">
+            {couponError}
+          </p>
         ) : null}
 
         {appliedCoupon ? (
-          <div className="mt-2 flex items-center justify-between gap-2 border border-green-100 bg-green-50 px-2.5 py-2">
-            <div className="min-w-0">
-              <p className="text-xs font-medium text-green-800">
-                {appliedCoupon.code} applied
-              </p>
-              <p className="truncate text-[10px] text-green-700">
-                {appliedCoupon.name}
-              </p>
+          <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-green-200 bg-green-50 p-3">
+            <div className="flex min-w-0 items-start gap-2">
+              <Tag size={15} className="mt-0.5 shrink-0 text-green-700" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-green-800">
+                  {appliedCoupon.code} applied
+                </p>
+                <p className="mt-0.5 truncate text-xs text-green-700">
+                  {appliedCoupon.name}
+                </p>
+              </div>
             </div>
 
             <button
@@ -566,33 +595,33 @@ export function OrderSummary({
         ) : null}
       </div>
 
-      {/* DISCOUNT */}
+      {/* DISCOUNTS */}
       {discountAmount > 0 ? (
-        <div className="mt-3 space-y-2 border-t border-neutral-100 pt-3">
+        <div className="mx-4 space-y-2 border-t border-neutral-100 py-4 sm:mx-5">
           {couponDiscount ? (
-            <div className="flex items-center justify-between gap-3 text-xs">
+            <div className="flex items-center justify-between gap-3 text-sm">
               <span className="text-neutral-500">Coupon discount</span>
-              <span className="font-medium text-green-700">
+              <span className="font-medium tabular-nums text-green-700">
                 {formatDiscount(couponDiscount.discountAmount)}
               </span>
             </div>
           ) : null}
 
           {automaticDiscounts.length === 0 && !couponDiscount ? (
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center justify-between gap-3 text-sm">
               <span className="text-neutral-500">Discount</span>
-              <span className="font-medium text-green-700">
+              <span className="font-medium tabular-nums text-green-700">
                 {formatDiscount(discountAmount)}
               </span>
             </div>
           ) : null}
 
           {automaticDiscounts.length > 0 && couponDiscount ? (
-            <div className="flex items-center justify-between gap-3 text-xs">
-              <span className="font-medium text-neutral-700">
-                Total discount
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span className="font-medium text-neutral-800">
+                Total savings
               </span>
-              <span className="font-semibold text-green-700">
+              <span className="font-semibold tabular-nums text-green-700">
                 {formatDiscount(discountAmount)}
               </span>
             </div>
@@ -600,12 +629,29 @@ export function OrderSummary({
         </div>
       ) : null}
 
-      {/* TOTAL */}
-      <div className="mt-4 flex items-center justify-between border-t border-neutral-200 pt-4">
-        <span className="text-sm font-semibold text-neutral-950">Total</span>
-        <span className="text-xl font-semibold tracking-tight text-neutral-950">
-          {formatMoney(total)}
-        </span>
+      {/* FINAL TOTAL */}
+      <div className="border-t border-neutral-200 bg-neutral-50 p-4 sm:p-5">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="font-semibold text-neutral-950">Total</p>
+            <p className="mt-1 text-xs text-neutral-500 font-semibold">
+              Cash on Delivery
+            </p>
+          </div>
+
+          <span className="text-2xl font-bold tracking-tight tabular-nums text-neutral-950">
+            {formatMoney(total)}
+          </span>
+        </div>
+
+        {shippingQuote?.estimatedDeliveryTime ? (
+          <div className="mt-3 flex items-center gap-2 border-t border-neutral-200 pt-3">
+            <span className="mt-0.5 text-green-700">✓</span>
+            <p className="text-right text-sm text-neutral-700 font-medium">
+              Estimated delivery: {shippingQuote.estimatedDeliveryTime}*
+            </p>
+          </div>
+        ) : null}
       </div>
     </aside>
   );

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { Check, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { Check, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 
 import {
   getAvailableSizes,
@@ -228,6 +228,34 @@ export function ComboSelector({ combo }: ComboSelectorProps) {
     openCart();
   }
 
+  // WhatsApp: opens the business chat without requiring selections.
+  function handleOrderOnWhatsApp() {
+    const WHATSAPP_NUMBER = "8801352565787";
+
+    const productUrl = `${window.location.origin}/combos/${combo.slug}`;
+
+    const message = [
+      "Hello EON Clothing! I'm interested in this combo.",
+      "",
+      `Product: ${combo.name}`,
+      `Price: ৳${combo.offerPrice.toLocaleString("en-BD")}`,
+      `Product link: ${productUrl}`,
+    ].join("\n");
+
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+  }
+
+  // Messenger: opens your Facebook Page conversation.
+  function handleMessageOnMessenger() {
+    const MESSENGER_PAGE_USERNAME = "eonclothingbd";
+
+    const messengerUrl = `https://m.me/${MESSENGER_PAGE_USERNAME}`;
+
+    window.open(messengerUrl, "_blank", "noopener,noreferrer");
+  }
+
   useEffect(() => {
     if (activeSlot === null) return;
 
@@ -242,7 +270,7 @@ export function ComboSelector({ combo }: ComboSelectorProps) {
 
   return (
     <>
-      {/*   COMBO BUILDER   */}
+      {/* COMBO BUILDER */}
       <div className="mt-5">
         <div className="flex items-center gap-2">
           <h2 className="text-[15px] font-medium text-neutral-950">
@@ -255,7 +283,7 @@ export function ComboSelector({ combo }: ComboSelectorProps) {
         </div>
 
         {/* Selected slots */}
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="mt-3 grid grid-cols-3 gap-3 md:grid-cols-3 xl:grid-cols-4">
           {selections.map((selection, index) => {
             const product = getSlotProduct(index);
 
@@ -285,15 +313,11 @@ export function ComboSelector({ combo }: ComboSelectorProps) {
                         sizes="(max-width: 640px) 50vw, 200px"
                       />
 
-                      <div className="absolute inset-x-0 bottom-0 bg-black/60 px-3 py-1 text-white backdrop-blur-[2px]">
-                        <p className="truncate text-xs font-medium">
-                          {product.color}
-                        </p>
+                      <div className="absolute inset-x-0 bottom-0 bg-black/60 px-3 py-2 text-white text-xs md:text-sm font-semibold backdrop-blur-[2px] tracking-wide">
+                        <span className="truncate">{product.color} </span>
 
                         {selection.size ? (
-                          <p className="mt-0.5 text-[11px] text-white font-medium">
-                            Size: {selection.size}
-                          </p>
+                          <span>({selection.size})</span>
                         ) : null}
                       </div>
                     </button>
@@ -328,29 +352,68 @@ export function ComboSelector({ combo }: ComboSelectorProps) {
         </div>
       </div>
 
-      {/* =====================================================
-          ADD TO CART
-      ====================================================== */}
-      <button
-        type="button"
-        onClick={handleAddToCart}
-        disabled={!isComplete}
-        className="group mt-5 flex h-12 w-full items-center justify-center gap-3 bg-neutral-950 px-5 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:text-neutral-400"
-      >
-        <ShoppingBag className="h-4 w-4" strokeWidth={1.7} />
+      {/* ADD TO CART + WHATSAPP + MESSENGER */}
+      <div className="mt-5 space-y-3">
+        {/* Add to Cart */}
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          disabled={!isComplete}
+          className="group flex h-12 w-full items-center justify-center gap-2.5 bg-orange-700 px-5 text-[15px] font-semibold text-white transition-colors duration- rounded-xs hover:bg-red-800 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500 tracking-wide"
+        >
+          <ShoppingCart className="h-4 w-4" strokeWidth={3} />
 
-        <span>
-          {isComplete
-            ? `Add Combo · ৳${combo.offerPrice.toLocaleString("en-BD")}`
-            : `Select ${combo.itemCount - selectedCount} more item${
-                combo.itemCount - selectedCount === 1 ? "" : "s"
-              }`}
-        </span>
-      </button>
+          <span>
+            {isComplete
+              ? "Add to Cart"
+              : `Select ${combo.itemCount - selectedCount} more item${
+                  combo.itemCount - selectedCount === 1 ? "" : "s"
+                }`}
+          </span>
+        </button>
 
-      {/* =====================================================
-          PRODUCT SELECTOR MODAL
-      ====================================================== */}
+        <div className="flex flex-col sm:flex-row gap-3 lg:gap-5">
+          {/* Order on WhatsApp */}
+          <button
+            type="button"
+            onClick={handleOrderOnWhatsApp}
+            className="flex h-12 w-full items-center justify-center gap-2.5 border px-5 text-sm font-semibold text-neutral-95 rounded-xs transition-colors duration-200 border-green-300 hover:border-green-500 bg-green-100"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="h-5 w-5 text-green-600"
+              aria-hidden="true"
+            >
+              <path d="M20.52 3.48A11.85 11.85 0 0 0 12.08 0C5.5 0 .15 5.35.15 11.93c0 2.1.55 4.15 1.6 5.96L.05 24l6.26-1.64a11.9 11.9 0 0 0 5.77 1.47h.01c6.58 0 11.93-5.35 11.93-11.93 0-3.19-1.24-6.19-3.5-8.42ZM12.09 21.8a9.9 9.9 0 0 1-5.04-1.38l-.36-.21-3.72.98.99-3.63-.23-.37a9.86 9.86 0 0 1-1.52-5.26c0-5.46 4.44-9.9 9.9-9.9 2.65 0 5.14 1.03 7.01 2.9a9.85 9.85 0 0 1 2.9 7.01c0 5.46-4.45 9.86-9.93 9.86Zm5.43-7.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.77-1.67-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.2-.24-.57-.48-.5-.67-.51h-.57c-.2 0-.52.08-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.47 1.07 2.88 1.22 3.08.15.2 2.1 3.2 5.09 4.48.71.31 1.26.5 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2.01-1.42.25-.7.25-1.29.17-1.42-.07-.13-.27-.2-.57-.35Z" />
+            </svg>
+
+            <span>Order on WhatsApp</span>
+          </button>
+
+          {/* Message Us on Messenger */}
+          <button
+            type="button"
+            onClick={handleMessageOnMessenger}
+            className="flex h-12 w-full items-center justify-center gap-2.5 border px-5 text-sm font-semibold text-neutral-950 transition-colors duration-200 rounded-xs border-blue-300 hover:border-blue-500 bg-blue-100"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="h-5 w-5 text-blue-600"
+              aria-hidden="true"
+            >
+              <path d="M12 2C6.37 2 2 6.13 2 11.53c0 3 1.47 5.65 3.77 7.4V22l3.02-1.66c1.02.28 2.1.42 3.21.42 5.63 0 10-4.13 10-9.23S17.63 2 12 2Zm1 12.43-2.55-2.72-4.98 2.72 5.47-5.8 2.62 2.72 4.92-2.72-5.48 5.8Z" />
+            </svg>
+
+            <span>Order on Messenger</span>
+          </button>
+        </div>
+      </div>
+
+      {/* PRODUCT SELECTOR MODAL */}
       {activeSlot !== null ? (
         <div
           className="fixed inset-0 z-100 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"

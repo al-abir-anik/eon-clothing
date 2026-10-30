@@ -1,12 +1,7 @@
-
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import {
-  ProductGallery,
-  ProductPurchasePanel,
-} from "@/components/product";
+import { ProductGallery, ProductPurchasePanel } from "@/components/product";
 import { ProductInfoTabs } from "@/components/product/product-info-tabs";
 import { RelatedCollection } from "@/components/product/related-collection";
 import { ViewContentTracker } from "@/components/analytics/view-content-tracker";
@@ -26,9 +21,7 @@ type ProductPageProps = {
   }>;
 };
 
-export default async function ProductPage({
-  params,
-}: ProductPageProps) {
+export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
 
   const product = await getStorefrontProductBySlug(slug);
@@ -37,42 +30,37 @@ export default async function ProductPage({
     notFound();
   }
 
-  const [colorOptions, products, categories, combos] =
-    await Promise.all([
-      product.profile?._id
-        ? getProductColorOptions(product.profile._id)
-        : Promise.resolve([]),
+  const [colorOptions, products, categories, combos] = await Promise.all([
+    product.profile?._id
+      ? getProductColorOptions(product.profile._id)
+      : Promise.resolve([]),
 
-      getStorefrontProducts(),
-      getNavigationCategories(),
-      getStorefrontCombos(),
-    ]);
+    getStorefrontProducts(),
+    getNavigationCategories(),
+    getStorefrontCombos(),
+  ]);
 
   /*
    * Find the Half Sleeve and Full Sleeve parent categories.
    */
   const halfSleeveCategory = categories.find(
-    (category) =>
-      category.title.toLowerCase() === "half sleeve t-shirt",
+    (category) => category.title.toLowerCase() === "half sleeve t-shirt",
   );
 
   const fullSleeveCategory = categories.find(
-    (category) =>
-      category.title.toLowerCase() === "full sleeve t-shirt",
+    (category) => category.title.toLowerCase() === "full sleeve t-shirt",
   );
 
   /*
    * Find the Solid child category under each parent.
    */
-  const halfSleeveSolidCategory =
-    halfSleeveCategory?.children.find(
-      (category) => category.title.toLowerCase() === "solid",
-    );
+  const halfSleeveSolidCategory = halfSleeveCategory?.children.find(
+    (category) => category.title.toLowerCase() === "solid",
+  );
 
-  const fullSleeveSolidCategory =
-    fullSleeveCategory?.children.find(
-      (category) => category.title.toLowerCase() === "solid",
-    );
+  const fullSleeveSolidCategory = fullSleeveCategory?.children.find(
+    (category) => category.title.toLowerCase() === "solid",
+  );
 
   /*
    * Get Solid products for each sleeve type.
@@ -82,8 +70,7 @@ export default async function ProductPage({
     ? products.filter(
         (item) =>
           item._id !== product._id &&
-          item.profile?.category?._id ===
-            halfSleeveSolidCategory._id,
+          item.profile?.category?._id === halfSleeveSolidCategory._id,
       )
     : [];
 
@@ -91,8 +78,7 @@ export default async function ProductPage({
     ? products.filter(
         (item) =>
           item._id !== product._id &&
-          item.profile?.category?._id ===
-            fullSleeveSolidCategory._id,
+          item.profile?.category?._id === fullSleeveSolidCategory._id,
       )
     : [];
 
@@ -101,17 +87,13 @@ export default async function ProductPage({
    */
   const halfSleeveCombos = halfSleeveSolidCategory
     ? combos.filter(
-        (combo) =>
-          combo.profile?.category?._id ===
-          halfSleeveSolidCategory._id,
+        (combo) => combo.profile?.category?._id === halfSleeveSolidCategory._id,
       )
     : [];
 
   const fullSleeveCombos = fullSleeveSolidCategory
     ? combos.filter(
-        (combo) =>
-          combo.profile?.category?._id ===
-          fullSleeveSolidCategory._id,
+        (combo) => combo.profile?.category?._id === fullSleeveSolidCategory._id,
       )
     : [];
 
@@ -147,10 +129,7 @@ export default async function ProductPage({
       {/* PRODUCT DETAILS */}
       <div className="grid gap-10 lg:grid-cols-2">
         {/* Gallery */}
-        <ProductGallery
-          images={productImages}
-          name={product.name}
-        />
+        <ProductGallery images={productImages} name={product.name} />
 
         {/* Product Information */}
         <div className="flex flex-col gap-4">
@@ -162,10 +141,7 @@ export default async function ProductPage({
           <div className="flex items-center gap-4">
             {product.resolvedPricing.price !== null ? (
               <span className="text-2xl font-semibold text-neutral-950">
-                ৳
-                {product.resolvedPricing.price.toLocaleString(
-                  "en-BD",
-                )}
+                ৳{product.resolvedPricing.price.toLocaleString("en-BD")}
               </span>
             ) : null}
 
@@ -173,9 +149,7 @@ export default async function ProductPage({
             product.resolvedPricing.compareAtPrice !== null ? (
               <span className="pt-0.5 text-xl font-semibold text-gray-400 line-through">
                 ৳
-                {product.resolvedPricing.compareAtPrice.toLocaleString(
-                  "en-BD",
-                )}
+                {product.resolvedPricing.compareAtPrice.toLocaleString("en-BD")}
               </span>
             ) : null}
 
@@ -190,53 +164,48 @@ export default async function ProductPage({
           {/* Color Options */}
           {colorOptions.length > 0 ? (
             <div className="mt-1">
-              <p className="mb-3 text-sm font-semibold tracking-wide text-neutral-500">
-                All Colors
-              </p>
+              <div className="mb-3 flex items-center gap-2">
+                <span className="text-sm font-semibold tracking-wide text-neutral-700">
+                  Color :
+                </span>
 
-              <div className="flex flex-wrap gap-3">
+                <span className="text-sm text-neutral-500 uppercase">
+                  {product.color}
+                </span>
+              </div>
+
+              <div
+                className="flex flex-wrap items-center gap-3"
+                aria-label="Available colors"
+              >
                 {colorOptions.map((colorOption) => {
-                  const isCurrent =
-                    colorOption._id === product._id;
+                  const isCurrent = colorOption._id === product._id;
 
                   return (
                     <Link
                       key={colorOption._id}
                       href={`/product/${colorOption.slug}`}
-                      aria-label={`View ${colorOption.name}`}
+                      aria-label={`View ${colorOption.name} color`}
+                      aria-current={isCurrent ? "page" : undefined}
                       title={colorOption.name}
                       className={[
-                        "relative h-11 w-11 overflow-hidden",
-                        "transition-transform duration-200 hover:scale-105",
+                        "group inline-flex h-10 w-10 items-center justify-center",
+                        "rounded-full transition-transform duration-200",
+                        "hover:scale-105",
+                        "focus-visible:outline-none focus-visible:ring-2",
+                        "focus-visible:ring-neutral-900 focus-visible:ring-offset-2",
                         isCurrent
-                          ? "ring-1 ring-black ring-offset-2"
-                          : "ring-1 ring-neutral-200 hover:ring-neutral-400",
+                          ? "ring-2 ring-neutral-950 ring-offset-2"
+                          : "ring-1 ring-neutral-300 hover:ring-neutral-600",
                       ].join(" ")}
                     >
-                      {colorOption.image ? (
-                        <Image
-                          src={urlFor(colorOption.image)
-                            .width(44)
-                            .height(44)
-                            .fit("crop")
-                            .auto("format")
-                            .url()}
-                          alt={colorOption.name}
-                          fill
-                          sizes="44px"
-                          className="object-cover"
-                        />
-                      ) : colorOption.colorHex ? (
-                        <span
-                          className="absolute inset-0"
-                          style={{
-                            backgroundColor:
-                              colorOption.colorHex,
-                          }}
-                        />
-                      ) : (
-                        <span className="absolute inset-0 bg-neutral-200" />
-                      )}
+                      <span
+                        aria-hidden="true"
+                        className="h-full w-full rounded-full border border-black/5"
+                        style={{
+                          backgroundColor: colorOption.colorHex || "#E5E5E5",
+                        }}
+                      />
                     </Link>
                   );
                 })}

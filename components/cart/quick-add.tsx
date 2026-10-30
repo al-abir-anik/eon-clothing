@@ -127,22 +127,32 @@ export default function QuickAdd({ product }: QuickAddProps) {
   return (
     <>
       {/* QUICK ADD TRIGGER */}
-      <button
-        type="button"
-        disabled={!product.isInStock}
-        onClick={() => dialogRef.current?.showModal()}
-        className="group flex h-10 w-full items-center justify-between border border-black/15 bg-white px-3.5 text-[#171717] transition-all duration-200 hover:border-[#171717] hover:bg-[#171717] hover:text-white disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/5 disabled:text-black/30 sm:h-11 sm:px-4"
-      >
-        <span className="text-[10px] font-bold uppercase tracking-[0.14em]">
-          {product.isInStock ? "Quick add" : "Sold out"}
-        </span>
 
-        {product.isInStock ? (
-          <span className="flex h-6 w-6 items-center justify-center border border-current/20 transition-transform duration-200 group-hover:rotate-90">
-            <Plus size={14} strokeWidth={1.7} />
-          </span>
-        ) : null}
-      </button>
+      
+<button
+  type="button"
+  disabled={!product.isInStock}
+  onClick={() => dialogRef.current?.showModal()}
+  className="group flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-[#B92E26] px-2 text-white transition-colors duration-200 hover:bg-[#98251F] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400 disabled:active:scale-100 sm:h-9"
+>
+  {product.isInStock ? (
+    <>
+      <Plus
+        size={13}
+        strokeWidth={2.2}
+        className="shrink-0 transition-transform duration-200 group-hover:rotate-90"
+      />
+      <span className="text-[10px] font-semibold tracking-wide sm:text-[11px]">
+        Add to Cart
+      </span>
+    </>
+  ) : (
+    <span className="text-[10px] font-semibold tracking-wide sm:text-[11px]">
+      Sold Out
+    </span>
+  )}
+</button>
+
 
       {/* QUICK ADD MODAL */}
       <dialog

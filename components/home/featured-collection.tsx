@@ -192,7 +192,7 @@ export function FeaturedCollection({
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 sm:gap-x-5 lg:grid-cols-4 lg:gap-x-6">
+              <div className="grid grid-cols-2 gap-x-3 gap-y-4 md:gap-y-8 md:grid-cols-3 sm:gap-x-5 lg:grid-cols-4 lg:gap-x-6">
                 {/* Combos first */}
                 {combos.map((combo) => (
                   <ComboProductCard key={`combo-${combo._id}`} combo={combo} />

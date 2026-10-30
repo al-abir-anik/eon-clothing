@@ -2,9 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Urbanist } from "next/font/google";
 import { Toaster } from "sonner";
-
-import "../style/index.css";
 import MetaPixel from "@/components/MetaPixel";
+import "../style/index.css";
 
 const urbanist = Urbanist({
   subsets: ["latin"],
@@ -80,28 +79,25 @@ export default function RootLayout({
         <ClerkProvider>
           {children}
 
-          <Toaster
-            position="bottom-right"
+          {/* <Toaster
+            position="bottom-center"
             expand={false}
-            closeButton
-            duration={3000}
+            duration={2500}
             toastOptions={{
               classNames: {
                 toast:
-                  "border border-black/10 bg-[var(--eon-cream)] text-[var(--eon-ink)] shadow-[0_18px_50px_rgba(0,0,0,0.10)] rounded-[var(--eon-radius-sm)] px-4 py-3",
-                title: "font-semibold tracking-[-0.01em]",
-                description: "text-[var(--eon-neutral-700)]",
-                actionButton:
-                  "bg-[var(--eon-ink)] text-white hover:bg-[var(--eon-ink-soft)]",
-                cancelButton:
-                  "border border-black/10 bg-transparent text-[var(--eon-ink)]",
-                closeButton:
-                  "!border-black/10 !bg-transparent !text-[var(--eon-neutral-500)] hover:!text-[var(--eon-ink)]",
-                success: "!border-[var(--eon-red)]/20 !bg-[var(--eon-cream)]",
-                error: "!border-red-900/15 !bg-[var(--eon-cream)]",
+                  "!w-fit !min-w-0 !max-w-[calc(100vw-32px)] rounded border px-4 py-3 shadow-lg !text-white",
+                title: "text-sm font-semibold tracking-normal !text-white",
+                description: "hidden",
+                success: "!border-green-600 !bg-green-700 !text-white",
+                error: "!border-red-600 !bg-red-700 !text-white",
+                info: "!border-blue-600 !bg-blue-700 !text-white",
+                warning: "!border-amber-500 !bg-amber-600 !text-white",
+                actionButton: "!bg-white !text-neutral-900",
+                cancelButton: "!border-white/30 !bg-transparent !text-white",
               },
             }}
-          />
+          /> */}
         </ClerkProvider>
       </body>
     </html>

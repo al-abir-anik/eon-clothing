@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingBag } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 
 import { useCart } from "@/components/cart/cart-provider";
 import { CartCount } from "@/components/cart/cart-provider";
@@ -17,7 +17,7 @@ export function CartButton() {
         aria-label="Open shopping cart"
         className="group relative flex h-11 w-11 items-center justify-center border border-black/10 bg-[#FFF8E9] text-[#171717] transition-colors hover:border-[#B92E26] active:scale-95 lg:hidden"
       >
-        <ShoppingBag
+        <ShoppingCart
           size={20}
           strokeWidth={1.6}
           className="transition-transform duration-200 group-hover:-translate-y-0.5"
@@ -36,7 +36,7 @@ export function CartButton() {
         className="group hidden h-11 items-stretch border border-black/15 bg-[#FFF8E9] text-[#171717] transition-colors duration-200 hover:border-[#B92E26] lg:inline-flex xl:h-12"
       >
         <span className="flex items-center gap-2.5 px-3.5 xl:px-4">
-          <ShoppingBag size={18} strokeWidth={1.6} />
+          <ShoppingCart size={18} strokeWidth={1.6} />
 
           <span className="text-xs font-semibold uppercase tracking-[0.12em]">
             Cart

@@ -14,6 +14,7 @@ import {
   Truck,
   Wallet,
   XCircle,
+  ArrowUpRight,
 } from "lucide-react";
 
 import { getDashboardSummary } from "@/lib/ecommerce/dashboard/dashboard-service";
@@ -317,11 +318,12 @@ export default async function AdminDashboardPage() {
 
         <div className="flex flex-wrap gap-2">
           <Link
-            href="/admin/products/new"
-            className="inline-flex items-center gap-2 bg-neutral-950 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-neutral-800"
+            href="/admin/orders/new"
+            className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xs bg-indigo-600 px-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 sm:self-auto"
           >
-            <Plus size={16} strokeWidth={1.8} />
-            Add Product
+            <Plus size={16} />
+            Create Order
+            <ArrowUpRight size={14} className="text-indigo-200" />
           </Link>
 
           <Link

@@ -152,7 +152,7 @@ export default async function ComboPage({ params }: ComboPageProps) {
       />
 
       {/* COMBO PRODUCT */}
-      <div className="grid gap-10 lg:grid-cols-2">
+      <div className="grid gap-5 lg:gap-10 lg:grid-cols-2">
         {/* Combo Images */}
         <ProductGallery images={comboImages} name={combo.name} />
 
@@ -164,7 +164,7 @@ export default async function ComboPage({ params }: ComboPageProps) {
           </p>
 
           {/* Combo Name */}
-          <h1 className="mt-2.5 text-2xl font-semibold tracking-tight text-neutral-950 sm:text-2xl">
+          <h1 className="mt-2.5 text-xl font-semibold tracking-tight text-neutral-950 md:text-2xl">
             {combo.name}
           </h1>
 
@@ -204,7 +204,7 @@ export default async function ComboPage({ params }: ComboPageProps) {
           )}
 
           {/* Trust & Service Information */}
-          <div className="mt-5.5 w-fit rounded-xs border border-emerald-200 px-4 py-2">
+          <div className="mt-5.5 mb-2 w-fit rounded-xs border border-neutral-200 px-4 py-2">
             <div className="flex items-center gap-2">
               <Check size={16} strokeWidth={3} className="text-green-600" />
 
@@ -215,7 +215,7 @@ export default async function ComboPage({ params }: ComboPageProps) {
 
             <ul className="mt-1.5 flex list-inside list-disc gap-3 pl-1">
               <li className="text-xs font-medium text-neutral-600">
-                Tell us within 7 days
+                Tell us within 3 days
               </li>
 
               <li className="text-xs font-medium text-neutral-600">

@@ -2,7 +2,6 @@
 import { Mail, Phone } from "lucide-react";
 
 import { shippingConfig } from "@/config/shipping";
-import { shippingContent } from "@/config/shipping-content";
 import { footerConfig } from "@/config/site";
 
 export const metadata = {

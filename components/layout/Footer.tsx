@@ -44,8 +44,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-10 py-12 sm:grid-cols-2 sm:gap-x-10 sm:gap-y-12 lg:grid-cols-[1.4fr_0.8fr_0.8fr] lg:gap-16 lg:py-16">
           {/* Brand */}
           <section aria-label="EON Clothing">
-            <p className="mb-5 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#D66A5E]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#D66A5E]" />
+            <p className="mb-5 ml-1 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#D66A5E]">
               Made for your everyday era
             </p>
 

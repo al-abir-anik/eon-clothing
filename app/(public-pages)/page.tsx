@@ -73,7 +73,7 @@ export default async function HomePage() {
     : [];
 
   return (
-    <main>
+    <main className="mb-5 md:mb-10">
       <HeroSection />
 
       <BenefitsSection />

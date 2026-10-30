@@ -20,7 +20,7 @@ import {
 } from "@/lib/ecommerce/customers/customer-service";
 
 const manualOrderSchema = z.object({
-  source: z.enum(["facebook", "instagram", "phone", "other"]),
+  source: z.enum(["facebook", "instagram", "whatsapp", "phone", "other"]),
   customerName: z.string().trim().min(2).max(100),
   phone: z
     .string()

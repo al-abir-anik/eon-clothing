@@ -56,8 +56,8 @@ export function RelatedCollection({
   };
 
   // Keep the related section compact.
-  const products = productsByTab[activeTab].slice(0, 4);
-  const combos = combosByTab[activeTab].slice(0, 2);
+  const products = productsByTab[activeTab];
+  const combos = combosByTab[activeTab];
 
   const totalItems = products.length + combos.length;
 

@@ -61,7 +61,7 @@ type ManualOrderFormProps = {
   combos: ManualOrderCombo[];
 };
 
-type OrderSource = "facebook" | "instagram" | "phone" | "other";
+type OrderSource = "facebook" | "instagram" | "whatsapp" | "phone" | "other";
 type DeliveryZone = "dhaka_city" | "outside_dhaka";
 
 const inputClass =
@@ -427,6 +427,7 @@ export function ManualOrderForm({ products, combos }: ManualOrderFormProps) {
             >
               <option value="facebook">Facebook</option>
               <option value="instagram">Instagram</option>
+              <option value="whatsapp">WhatsApp</option>
               <option value="phone">Phone call</option>
               <option value="other">Other</option>
             </select>

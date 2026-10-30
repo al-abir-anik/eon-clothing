@@ -1,10 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import {
-  Check,
-  LoaderCircle,
-} from "lucide-react";
+import { ArrowRight, LoaderCircle } from "lucide-react";
 
 import {
   checkoutSchema,
@@ -12,6 +9,7 @@ import {
 } from "@/lib/validation/checkout";
 import { submitCheckoutOrder } from "./actions";
 import { useCartStore } from "@/stores/cart-store";
+import { OrderSummary } from "./order-summary";
 
 type CheckoutFormState = Omit<CheckoutFormData, "zoneType"> & {
   zoneType: "dhaka_city" | "outside_dhaka" | "";
@@ -31,12 +29,14 @@ type CheckoutFormProps = {
   zoneType: "dhaka_city" | "outside_dhaka" | "";
   onZoneTypeChange: (zoneType: "dhaka_city" | "outside_dhaka") => void;
   couponCode: string;
+  onCouponCodeChange: (value: string) => void;
 };
 
 export function CheckoutForm({
   zoneType,
   onZoneTypeChange,
   couponCode,
+  onCouponCodeChange,
 }: CheckoutFormProps) {
   const cartItems = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
@@ -255,192 +255,219 @@ export function CheckoutForm({
     }
   };
 
+  const hasFormErrors = Object.values(errors).some(Boolean);
+
+  const firstFormError = Object.values(errors).find(Boolean);
+
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-3">
-      <section className="space-y-3">
-        {/* name, number */}
-        <div className="grid gap-3 sm:grid-cols-2">
+    <form
+      onSubmit={handleSubmit}
+      noValidate
+      className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(300px,380px)] lg:items-start lg:gap-x-8"
+    >
+      <div className="min-w-0 space-y-3 lg:col-start-1 lg:row-start-1 border border-neutral-300">
+        <h2 className="lg:mb-1 pb-3 font-semibold border-b border-neutral-200 px-4 py-3 sm:px-5 bg-neutral-50 lg:text-lg">
+          Delivery Details
+        </h2>
+
+        <section className="space-y-3 px-4 sm:px-5 py-1 lg:py-5">
+          {/* name, number */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <input
+                id="fullName"
+                name="fullName"
+                type="text"
+                value={formData.fullName}
+                onChange={(event) =>
+                  handleChange("fullName", event.target.value)
+                }
+                placeholder="Your name"
+                autoComplete="name"
+                disabled={isSubmitting}
+                aria-invalid={Boolean(errors.fullName)}
+                className={`h-9 w-full border px-3 text-sm outline-none focus:border-[#171717] disabled:bg-neutral-50 ${
+                  errors.fullName ? "border-red-500" : "border-neutral-200"
+                }`}
+              />
+              {errors.fullName && (
+                <p className="mt-1 text-xs text-red-600">{errors.fullName}</p>
+              )}
+            </div>
+
+            <div>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={(event) => handleChange("phone", event.target.value)}
+                placeholder="Phone number"
+                autoComplete="tel"
+                inputMode="tel"
+                disabled={isSubmitting}
+                aria-invalid={Boolean(errors.phone)}
+                className={`h-9 w-full border px-3 text-sm outline-none focus:border-[#171717] disabled:bg-neutral-50 ${
+                  errors.phone ? "border-red-500" : "border-neutral-200"
+                }`}
+              />
+              {errors.phone && (
+                <p className="mt-1 text-xs text-red-600">{errors.phone}</p>
+              )}
+            </div>
+          </div>
+
+          {/* address */}
           <div>
-            <label
-              htmlFor="fullName"
-              className="mb-1 block text-xs font-medium"
-            >
-              Full name
-            </label>
-            <input
-              id="fullName"
-              name="fullName"
-              type="text"
-              value={formData.fullName}
-              onChange={(event) => handleChange("fullName", event.target.value)}
-              placeholder="your name"
-              autoComplete="name"
+            <textarea
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={(event) => handleChange("address", event.target.value)}
+              placeholder="Full delivery address"
+              autoComplete="street-address"
+              rows={2}
               disabled={isSubmitting}
-              aria-invalid={Boolean(errors.fullName)}
-              className={`h-9 w-full border px-3 text-sm outline-none focus:border-[#171717] disabled:bg-neutral-50 ${
-                errors.fullName ? "border-red-500" : "border-neutral-200"
+              aria-invalid={Boolean(errors.address)}
+              className={`w-full resize-none border px-3 py-2 text-sm outline-none focus:border-[#171717] disabled:bg-neutral-50 ${
+                errors.address ? "border-red-500" : "border-neutral-200"
               }`}
             />
-            {errors.fullName && (
-              <p className="mt-1 text-xs text-red-600">{errors.fullName}</p>
+            {errors.address && (
+              <p className="mt-1 text-xs text-red-600">{errors.address}</p>
             )}
           </div>
 
+          {/* shipping area */}
           <div>
-            <label htmlFor="phone" className="mb-1 block text-xs font-medium">
-              Phone number
-            </label>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={(event) => handleChange("phone", event.target.value)}
-              placeholder="01XXXXXXXXX"
-              autoComplete="tel"
-              inputMode="tel"
-              disabled={isSubmitting}
-              aria-invalid={Boolean(errors.phone)}
-              className={`h-9 w-full border px-3 text-sm outline-none focus:border-[#171717] disabled:bg-neutral-50 ${
-                errors.phone ? "border-red-500" : "border-neutral-200"
-              }`}
-            />
-            {errors.phone && (
-              <p className="mt-1 text-xs text-red-600">{errors.phone}</p>
+            <div className="flex flex-wrap gap-3">
+              {(
+                [
+                  { value: "dhaka_city", label: "Inside Dhaka" },
+                  { value: "outside_dhaka", label: "Outside Dhaka" },
+                ] as const
+              ).map((zone) => {
+                const selected = zoneType === zone.value;
+
+                return (
+                  <label
+                    key={zone.value}
+                    className={`flex items-center gap-2.5 border px-3 py-2.5 text-xs transition cursor-pointer ${
+                      selected
+                        ? "border-[#171717] bg-neutral-50"
+                        : "border-neutral-200 bg-white hover:border-neutral-400"
+                    } ${isSubmitting ? "cursor-not-allowed opacity-60" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="zoneType"
+                      value={zone.value}
+                      checked={selected}
+                      onChange={() => handleZoneChange(zone.value)}
+                      disabled={isSubmitting}
+                      className="h-3.5 w-3.5 accent-[#171717]"
+                    />
+
+                    <span className="font-medium text-neutral-800">
+                      {zone.label}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+
+            {errors.zoneType && (
+              <p className="mt-1 text-xs text-red-600">{errors.zoneType}</p>
             )}
           </div>
-        </div>
 
-        {/* address */}
-        <div>
-          <label htmlFor="address" className="mb-1 block text-xs font-medium">
-            Full address
-          </label>
-          <textarea
-            id="address"
-            name="address"
-            value={formData.address}
-            onChange={(event) => handleChange("address", event.target.value)}
-            placeholder="road, area, city"
-            autoComplete="street-address"
-            rows={2}
-            disabled={isSubmitting}
-            aria-invalid={Boolean(errors.address)}
-            className={`w-full resize-none border px-3 py-2 text-sm outline-none focus:border-[#171717] disabled:bg-neutral-50 ${
-              errors.address ? "border-red-500" : "border-neutral-200"
-            }`}
-          />
-          {errors.address && (
-            <p className="mt-1 text-xs text-red-600">{errors.address}</p>
-          )}
-        </div>
-
-        {/* shipping area */}
-        <div>
-          <label className="mb-1 block text-xs font-medium">
-            Delivery area
-          </label>
-          <div className="flex flex-wrap gap-3">
-            {(
-              [
-                { value: "dhaka_city", label: "Inside Dhaka" },
-                { value: "outside_dhaka", label: "Outside Dhaka" },
-              ] as const
-            ).map((zone) => {
-              const selected = zoneType === zone.value;
-
-              return (
-                <label
-                  key={zone.value}
-                  className={`flex items-center gap-2.5 border px-3 py-2.5 text-xs transition cursor-pointer ${
-                    selected
-                      ? "border-[#171717] bg-neutral-50"
-                      : "border-neutral-200 bg-white hover:border-neutral-400"
-                  } ${isSubmitting ? "cursor-not-allowed opacity-60" : ""}`}
-                >
-                  <input
-                    type="radio"
-                    name="zoneType"
-                    value={zone.value}
-                    checked={selected}
-                    onChange={() => handleZoneChange(zone.value)}
-                    disabled={isSubmitting}
-                    className="h-3.5 w-3.5 accent-[#171717]"
-                  />
-
-                  <span className="font-medium text-neutral-800">
-                    {zone.label}
-                  </span>
-                </label>
-              );
-            })}
+          {/* notes */}
+          <div>
+            <textarea
+              id="deliveryNotes"
+              name="deliveryNotes"
+              value={formData.deliveryNotes}
+              onChange={(event) =>
+                handleChange("deliveryNotes", event.target.value)
+              }
+              placeholder="Delivery Note (Optional)"
+              rows={2}
+              disabled={isSubmitting}
+              aria-invalid={Boolean(errors.deliveryNotes)}
+              className={`w-full resize-none border px-3 py-2 text-sm outline-none focus:border-[#171717] disabled:bg-neutral-50 ${
+                errors.deliveryNotes ? "border-red-500" : "border-neutral-200"
+              }`}
+            />
+            {errors.deliveryNotes && (
+              <p className="mt-1 text-xs text-red-600">
+                {errors.deliveryNotes}
+              </p>
+            )}
           </div>
+        </section>
+      </div>
 
-          {errors.zoneType && (
-            <p className="mt-1 text-xs text-red-600">{errors.zoneType}</p>
-          )}
-        </div>
-
-        {/* notes */}
-        <div>
-          <label className="mb-1 block text-xs font-medium">
-            Delivery Note
-          </label>
-
-          <textarea
-            id="deliveryNotes"
-            name="deliveryNotes"
-            value={formData.deliveryNotes}
-            onChange={(event) =>
-              handleChange("deliveryNotes", event.target.value)
-            }
-            placeholder="exp: call before delivery"
-            rows={2}
-            disabled={isSubmitting}
-            aria-invalid={Boolean(errors.deliveryNotes)}
-            className={`w-full resize-none border px-3 py-2 text-sm outline-none focus:border-[#171717] disabled:bg-neutral-50 ${
-              errors.deliveryNotes ? "border-red-500" : "border-neutral-200"
-            }`}
-          />
-          {errors.deliveryNotes && (
-            <p className="mt-1 text-xs text-red-600">{errors.deliveryNotes}</p>
-          )}
-        </div>
-      </section>
-
-      <section className="sm:w-1/2 md:w-2/3 lg:w-1/3 flex items-center justify-between border border-neutral-200 bg-neutral-50 px-3 py-2.5">
-        <div className="flex items-center gap-2">
-          <Check size={15} className="text-neutral-700" />
-          <span className="text-xs font-semibold">Cash on Delivery</span>
-        </div>
-        <span className="text-[10px] text-neutral-500">COD</span>
-      </section>
-
-      {serverError && (
-        <div
-          role="alert"
-          className="border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700"
-        >
-          {serverError}
-        </div>
-      )}
-
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="flex h-12 w-full items-center justify-center gap-2 bg-[#171717] px-4 text-sm font-semibold text-white transition hover:bg-green-800 active:scale-98 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {isSubmitting ? (
-          <>
-            <LoaderCircle size={15} className="animate-spin" />
-            Placing Order...
-          </>
-        ) : (
-          <>
-            Confirm Order <span aria-hidden="true">→</span>
-          </>
+      {/* ORDER SUMMARY + CONFIRMATION */}
+      <div className="min-w-0 space-y-4 lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1">
+        {serverError && (
+          <div
+            role="alert"
+            className="border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700"
+          >
+            {serverError}
+          </div>
         )}
-      </button>
+
+        <OrderSummary
+          zoneType={zoneType}
+          couponCode={couponCode}
+          onCouponCodeChange={onCouponCodeChange}
+        />
+
+        {/* FORM ERROR SUMMARY */}
+        {(hasFormErrors || serverError) && (
+          <div
+            role="alert"
+            aria-live="polite"
+            className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            <p className="font-semibold">
+              {serverError
+                ? "Unable to place order"
+                : "Please check your details"}
+            </p>
+
+            <p className="mt-1 text-xs leading-relaxed">
+              {serverError || firstFormError}
+            </p>
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="group relative flex h-14 w-full items-center justify-center gap-3 overflow-hidden rounded border border-[#7DD3FC]/50 bg-linear-to-r from-[#0369A1]/80 via-[#0284C7] to-[#0369A1]/80 px-5 text-sm font-bold uppercase tracking-[0.12em] text-white transition-all duration-300 hover:-translate-y-0.5 hover:border-[#BAE6FD] hover:from-[#0284C7] hover:via-[#0EA5E9] hover:to-[#0284C7]  active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+        >
+          {/* Subtle glass shine on hover */}
+          <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-linear-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-[450%]" />
+
+          {isSubmitting ? (
+            <>
+              <LoaderCircle size={18} className="relative animate-spin" />
+              <span className="relative">Placing Order...</span>
+            </>
+          ) : (
+            <>
+              <span className="relative">Place Order</span>
+              <ArrowRight
+                size={18}
+                strokeWidth={3}
+                className="relative mb-0.5 transition-transform duration-300 group-hover:translate-x-1"
+              />
+            </>
+          )}
+        </button>
+      </div>
     </form>
   );
 }

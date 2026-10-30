@@ -26,11 +26,12 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
   const imageSignature = JSON.stringify(images.map((image) => image.src));
 
   // Reset the selected image automatically when the product changes.
-  // No effect or synchronous setState in an effect is needed.
   const activeIndex =
     selection.signature === imageSignature ? selection.index : 0;
 
-  const setActiveIndex = (index: number | ((current: number) => number)) => {
+  const setActiveIndex = (
+    index: number | ((current: number) => number),
+  ) => {
     setSelection((previous) => {
       const currentIndex =
         previous.signature === imageSignature ? previous.index : 0;
@@ -51,7 +52,7 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
         aria-label={`${name} product gallery`}
         className="w-full min-w-0"
       >
-        <div className="relative aspect-7/8 w-full overflow-hidden bg-[#f5f4f1]">
+        <div className="relative aspect-square w-full overflow-hidden bg-[#f5f4f1]">
           <div className="flex h-full items-center justify-center px-4 text-center text-[10px] font-medium uppercase tracking-[0.2em] text-black/35">
             No image available
           </div>
@@ -112,7 +113,10 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
   };
 
   return (
-    <section aria-label={`${name} product gallery`} className="w-full min-w-0">
+    <section
+      aria-label={`${name} product gallery`}
+      className="w-full min-w-0"
+    >
       {/* Main product image */}
       <div
         className="group relative isolate w-full min-w-0 overflow-hidden rounded-xs bg-[#f5f4f1]"
@@ -127,15 +131,8 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
             fill
             priority={safeIndex === 0}
             sizes="(max-width: 639px) calc(100vw - 32px), (max-width: 1023px) calc(100vw - 48px), (max-width: 1439px) 45vw, 660px"
-            className="object-cover transition-transform duration-500 ease-out motion-safe:group-hover:scale-[1.01]"
+            className="object-contain transition-transform duration-500 ease-out motion-safe:group-hover:scale-[1.01]"
           />
-
-          {/* Brand label */}
-          {/* <div className="pointer-events-none absolute left-3 top-3 sm:left-5 sm:top-5">
-            <span className="text-[8px] font-medium uppercase tracking-[0.18em] text-white mix-blend-difference sm:text-[9px] sm:tracking-[0.2em]">
-              EON CLOTHING
-            </span>
-          </div> */}
 
           {/* Minimal image navigation */}
           {images.length > 1 && (
@@ -170,8 +167,9 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
       {/* Thumbnail gallery */}
       {images.length > 1 && (
         <div
+          role="group"
           aria-label="Choose product image"
-          className="mt-3 sm:mt-4 flex w-full min-w-0 gap-2 overflow-x-auto overscroll-x-contain pb-2 scrollbar-none [&::-webkit-scrollbar]:hidden"
+          className="mt-3 flex w-full min-w-0 gap-2 overflow-x-auto overscroll-x-contain pb-2 scrollbar-none [&::-webkit-scrollbar]:hidden sm:mt-4"
         >
           {images.map((image, index) => {
             const isActive = index === safeIndex;
@@ -184,7 +182,7 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
                 aria-label={`View image ${index + 1} of ${images.length}`}
                 aria-pressed={isActive}
                 className={[
-                  "relative aspect-square w-15 shrink-0 overflow-hidden  bg-[#f5f4f1]",
+                  "relative aspect-square w-15 shrink-0 overflow-hidden bg-[#f5f4f1]",
                   "transition-opacity duration-200 sm:w-17 md:w-19 lg:w-18 xl:w-20",
                   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950",
                   isActive
@@ -196,8 +194,8 @@ export function ProductGallery({ images, name }: ProductGalleryProps) {
                   src={image.thumbnail}
                   alt=""
                   fill
-                  sizes="(max-width: 639px) 56px, (max-width: 767px) 68px, (max-width: 1023px) 76px, (max-width: 1279px) 72px, 80px"
-                  className="object-cover"
+                  sizes="(max-width: 639px) 60px, (max-width: 767px) 68px, (max-width: 1023px) 76px, (max-width: 1279px) 72px, 80px"
+                  className="object-contain"
                 />
               </button>
             );

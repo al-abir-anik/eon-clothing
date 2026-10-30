@@ -8,6 +8,7 @@ import type { StorefrontProduct } from "@/lib/ecommerce/catalog";
 import { useCart } from "@/components/cart/cart-provider";
 import { useCartStore } from "@/stores/cart-store";
 import { trackMetaEvent } from "@/lib/meta-pixel";
+import { ProductSizeGuide } from "./product-size-guide";
 
 type ProductPurchasePanelProps = {
   product: StorefrontProduct;
@@ -22,9 +23,7 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
 
   const cartItems = useCartStore((state) => state.items);
 
-  const [selectedSize, setSelectedSize] = useState<string | null>(
-    availableSizes[0]?.size ?? null,
-  );
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
   const [quantity, setQuantity] = useState(1);
 
@@ -165,27 +164,20 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
   };
 
   return (
-    <div className="mt-4">
+    <div className="mt-2">
       {/* Size & Stock */}
       <div className="space-y-3">
         {/* Size */}
         {availableSizes.length > 0 ? (
           <section>
-            <div className="mb-3 flex items-end justify-between">
-              <p className="text-sm font-semibold tracking-wide text-neutral-500">
-                Size :{" "}
-                <span className="text-neutral-900 uppercase">
-                  {selectedSize && `${selectedSize}`}
-                </span>
-              </p>
+            <ProductSizeGuide sizeChart={product.profile?.sizeChart} />
 
-              <button
-                type="button"
-                className="text-sm font-medium underline underline-offset-4 transition-colors hover:text-neutral-500"
-              >
-                Size Guide
-              </button>
-            </div>
+            <p className="mt-5 mb-3 text-sm font-semibold tracking-wide text-neutral-700">
+              Size :{" "}
+              <span className="text-neutral-900 uppercase">
+                {selectedSize && `${selectedSize}`}
+              </span>
+            </p>
 
             <div className="flex gap-2">
               {product.inventory?.stockBySize?.map((size) => {
@@ -227,8 +219,8 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
           </section>
         ) : (
           <div className="border border-neutral-200 bg-neutral-50 px-4 py-5">
-            <p className="text-sm text-neutral-600">
-              This product is currently unavailable.
+            <p className="text-sm font-semibold text-red-700">
+              This product is OUT OF STOCK.
             </p>
           </div>
         )}
@@ -261,7 +253,15 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
       </div>
 
       {/* Purchase controls */}
-      {isPurchasable ? (
+      {!selectedSize ? (
+        <button
+          type="button"
+          disabled
+          className="mt-6 flex h-12 w-full items-center justify-center bg-neutral-200 px-6 text-sm font-semibold text-neutral-500"
+        >
+          Select a Size
+        </button>
+      ) : isPurchasable ? (
         <div className="mt-6 flex gap-3">
           {/* Quantity */}
           <div className="flex h-12 shrink-0 items-center border border-neutral-200">

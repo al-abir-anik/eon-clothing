@@ -27,7 +27,7 @@ export function BenefitsSection() {
   return (
     <section
       aria-label="Shopping benefits"
-      className="border-b border-black/5 bg-white"
+      className="hidden lg:block border-b border-black/5 bg-white"
     >
       <div className="mx-auto max-w-7xl px-4 py-5 sm:px-8 sm:py-7 lg:px-10">
         <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-4 sm:gap-5">

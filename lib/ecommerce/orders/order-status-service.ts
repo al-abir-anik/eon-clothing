@@ -1,6 +1,7 @@
 import "server-only";
 
 import { sanityMutationClient } from "@/lib/sanity";
+
 import {
   releaseInventory,
   consumeReservedInventory,
@@ -79,31 +80,100 @@ type OrderRecord = {
   items?: OrderItem[];
 };
 
+/**
+ * Order status rules:
+ *
+ * - Active orders can move directly between pending, confirmed,
+ *   and processing.
+ * - Active orders can also move directly to completed or cancelled.
+ * - Completed orders can only move to returned.
+ * - Cancelled and returned orders cannot be reopened.
+ *
+ * These rules are enforced on the server, not only in the UI.
+ */
 const ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  pending: ["confirmed", "cancelled"],
-  confirmed: ["processing", "cancelled"],
-  processing: ["completed", "cancelled"],
-  cancelled: [],
+  pending: ["confirmed", "processing", "completed", "cancelled"],
+  confirmed: ["pending", "processing", "completed", "cancelled"],
+  processing: ["pending", "confirmed", "completed", "cancelled"],
   completed: ["returned"],
+  cancelled: [],
   returned: [],
 };
 
+/**
+ * Shipping statuses can be changed directly to any other
+ * shipping status. This does not change the order status.
+ */
 const SHIPPING_TRANSITIONS: Record<ShippingStatus, ShippingStatus[]> = {
-  pending: ["ready", "failed"],
-  ready: ["picked_up", "failed"],
-  picked_up: ["in_transit", "failed"],
-  in_transit: ["delivered", "failed"],
-  delivered: ["returned"],
-  returned: [],
-  failed: [],
+  pending: [
+    "ready",
+    "picked_up",
+    "in_transit",
+    "delivered",
+    "returned",
+    "failed",
+  ],
+  ready: [
+    "pending",
+    "picked_up",
+    "in_transit",
+    "delivered",
+    "returned",
+    "failed",
+  ],
+  picked_up: [
+    "pending",
+    "ready",
+    "in_transit",
+    "delivered",
+    "returned",
+    "failed",
+  ],
+  in_transit: [
+    "pending",
+    "ready",
+    "picked_up",
+    "delivered",
+    "returned",
+    "failed",
+  ],
+  delivered: [
+    "pending",
+    "ready",
+    "picked_up",
+    "in_transit",
+    "returned",
+    "failed",
+  ],
+  returned: [
+    "pending",
+    "ready",
+    "picked_up",
+    "in_transit",
+    "delivered",
+    "failed",
+  ],
+  failed: [
+    "pending",
+    "ready",
+    "picked_up",
+    "in_transit",
+    "delivered",
+    "returned",
+  ],
 };
 
+/**
+ * Payment statuses can be changed directly to any other
+ * payment status. Recording a refund status does not issue
+ * a real payment refund.
+ */
 const PAYMENT_TRANSITIONS: Record<PaymentStatus, PaymentStatus[]> = {
-  pending: ["paid", "failed"],
-  paid: ["refunded", "partially_refunded"],
-  failed: [],
-  refunded: [],
-  partially_refunded: ["refunded"],
+  pending: ["paid", "failed", "refunded", "partially_refunded"],
+  paid: ["pending", "failed", "refunded", "partially_refunded"],
+  failed: ["pending", "paid", "refunded", "partially_refunded"],
+  refunded: ["pending", "paid", "failed", "partially_refunded"],
+  partially_refunded: ["pending", "paid", "failed", "refunded"],
 };
 
 async function getOrder(orderId: string): Promise<OrderRecord | null> {
@@ -208,15 +278,28 @@ function mergeInventoryAdjustments(
     if (existing) {
       existing.quantity += adjustment.quantity;
     } else {
-      merged.set(key, {
-        ...adjustment,
-      });
+      merged.set(key, { ...adjustment });
     }
   }
 
   return [...merged.values()];
 }
 
+/**
+ * Apply inventory effects only when the order status changes.
+ *
+ * Active -> Cancelled:
+ * Release reserved inventory.
+ *
+ * Active -> Completed:
+ * Consume reserved inventory.
+ *
+ * Completed -> Returned:
+ * Restore returned inventory.
+ *
+ * Cancelled and Returned orders cannot be reopened, so these
+ * effects cannot be reversed by moving back to an active state.
+ */
 async function applyOrderInventorySideEffect(
   currentStatus: OrderStatus,
   nextStatus: OrderStatus,
@@ -234,7 +317,7 @@ async function applyOrderInventorySideEffect(
     return;
   }
 
-  if (nextStatus === "returned" && currentStatus !== "returned") {
+  if (nextStatus === "returned" && currentStatus === "completed") {
     await restoreReturnedInventory(adjustments);
   }
 }
@@ -272,7 +355,6 @@ function buildStatusHistoryEntries({
   const entries: StatusHistoryEntry[] = [];
 
   const cleanChangedBy = changedBy.trim() || "admin";
-
   const cleanNote = note?.trim();
 
   if (nextOrderStatus !== undefined && nextOrderStatus !== currentOrderStatus) {
@@ -318,10 +400,11 @@ function buildStatusHistoryEntries({
 }
 
 /**
- * Update one or more order statuses in a single server-side operation.
+ * Update one or more order statuses.
  *
- * All requested transitions are validated before any mutation
- * is performed.
+ * Every requested transition and required customer reference
+ * is validated before inventory, customer statistics, or order
+ * mutations are attempted.
  */
 export async function updateOrderStatuses({
   orderId,
@@ -350,10 +433,11 @@ export async function updateOrderStatuses({
   }
 
   /*
-   * Validate every requested transition BEFORE
-   * performing any inventory or order mutation.
+   * STEP 1:
+   * Validate every requested status change before performing
+   * any inventory or customer-statistics mutations.
    */
-  if (orderStatus !== undefined) {
+  if (orderStatus !== undefined && orderStatus !== order.orderStatus) {
     validateTransition(
       order.orderStatus,
       orderStatus,
@@ -362,29 +446,7 @@ export async function updateOrderStatuses({
     );
   }
 
-  if (orderStatus === "completed" && order.orderStatus !== "completed") {
-    if (!order.customer?._ref) {
-      throw new Error("Order customer is missing.");
-    }
-
-    await updateCustomerOrderStats({
-      customerId: order.customer._ref,
-      orderTotal: order.total,
-    });
-  }
-
-  if (orderStatus === "returned" && order.orderStatus !== "returned") {
-    if (!order.customer?._ref) {
-      throw new Error("Order customer is missing.");
-    }
-
-    await reverseCustomerOrderStats({
-      customerId: order.customer._ref,
-      orderTotal: order.total,
-    });
-  }
-
-  if (shippingStatus !== undefined) {
+  if (shippingStatus !== undefined && shippingStatus !== order.shippingStatus) {
     validateTransition(
       order.shippingStatus,
       shippingStatus,
@@ -393,7 +455,7 @@ export async function updateOrderStatuses({
     );
   }
 
-  if (paymentStatus !== undefined) {
+  if (paymentStatus !== undefined && paymentStatus !== order.paymentStatus) {
     validateTransition(
       order.paymentStatus,
       paymentStatus,
@@ -403,17 +465,52 @@ export async function updateOrderStatuses({
   }
 
   /*
-   * Apply inventory side effects only when the order
-   * status actually changes.
+   * STEP 2:
+   * Determine the actual order-status change.
    */
-  if (orderStatus !== undefined) {
-    await applyOrderInventorySideEffect(
-      order.orderStatus,
-      orderStatus,
-      order.items ?? [],
-    );
+  const hasActualOrderChange =
+    orderStatus !== undefined && orderStatus !== order.orderStatus;
+
+  const hasActualShippingChange =
+    shippingStatus !== undefined && shippingStatus !== order.shippingStatus;
+
+  const hasActualPaymentChange =
+    paymentStatus !== undefined && paymentStatus !== order.paymentStatus;
+
+  if (
+    !hasActualOrderChange &&
+    !hasActualShippingChange &&
+    !hasActualPaymentChange
+  ) {
+    throw new Error("No status changes were provided.");
   }
 
+  /*
+   * STEP 3:
+   * Validate customer references before side effects.
+   *
+   * Completing an order updates customer order statistics.
+   * Returning a completed order reverses those statistics.
+   */
+  const isCompletingOrder = hasActualOrderChange && orderStatus === "completed";
+
+  const isReturningCompletedOrder =
+    hasActualOrderChange &&
+    order.orderStatus === "completed" &&
+    orderStatus === "returned";
+
+  if (
+    (isCompletingOrder || isReturningCompletedOrder) &&
+    !order.customer?._ref
+  ) {
+    throw new Error("Order customer is missing.");
+  }
+
+  /*
+   * STEP 4:
+   * Build history and validate the complete change before
+   * performing inventory or customer-statistics mutations.
+   */
   const timestamp = new Date().toISOString();
 
   const historyEntries = buildStatusHistoryEntries({
@@ -432,17 +529,55 @@ export async function updateOrderStatuses({
     throw new Error("No status changes were provided.");
   }
 
+  /*
+   * STEP 5:
+   * Apply inventory effects for an actual order-status change.
+   *
+   * Shipping/payment-only changes do not affect inventory.
+   */
+  if (hasActualOrderChange && orderStatus !== undefined) {
+    await applyOrderInventorySideEffect(
+      order.orderStatus,
+      orderStatus,
+      order.items ?? [],
+    );
+  }
+
+  /*
+   * STEP 6:
+   * Update customer statistics after validation and inventory
+   * handling. Only actual order transitions reach this block.
+   */
+  if (isCompletingOrder) {
+    await updateCustomerOrderStats({
+      customerId: order.customer!._ref,
+      orderTotal: order.total,
+    });
+  }
+
+  if (isReturningCompletedOrder) {
+    await reverseCustomerOrderStats({
+      customerId: order.customer!._ref,
+      orderTotal: order.total,
+    });
+  }
+
+  /*
+   * STEP 7:
+   * Persist all requested status changes and history entries
+   * together in a single Sanity transaction.
+   */
   const patch: Record<string, unknown> = {};
 
-  if (orderStatus !== undefined) {
+  if (hasActualOrderChange && orderStatus !== undefined) {
     patch.orderStatus = orderStatus;
   }
 
-  if (shippingStatus !== undefined) {
+  if (hasActualShippingChange && shippingStatus !== undefined) {
     patch.shippingStatus = shippingStatus;
   }
 
-  if (paymentStatus !== undefined) {
+  if (hasActualPaymentChange && paymentStatus !== undefined) {
     patch.paymentStatus = paymentStatus;
   }
 
